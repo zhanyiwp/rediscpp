@@ -1,6 +1,21 @@
 #include "RedisConn.h"
 #include <time.h>
 
+RedisOpt::RedisOpt()
+{
+
+}
+
+RedisOpt::RedisOpt(string Host, unsigned int Port, string Password, unsigned int Timeout, unsigned int PoolSize)
+:_host(Host)
+, _port(Port)
+, _password(Password)
+, _timeout(Timeout)
+, _pool_size(PoolSize)
+{
+
+}
+
 RedisConn::RedisConn(RedisOpt &Opt)
 :_host(Opt._host)
 , _port(Opt._port)
@@ -64,11 +79,6 @@ int RedisConn::Close()
 	_status = CS_UNCONNECTED;
 }
 
-int RedisConn::ReConnect()
-{
-	Connect();
-	Auth();
-}
 
 int RedisConn::Ping()
 {
