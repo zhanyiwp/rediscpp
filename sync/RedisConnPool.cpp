@@ -33,7 +33,8 @@ std::shared_ptr<RedisConn> RedisConnPool::GetConn()
 
 void RedisConnPool::FreeConn(std::shared_ptr<RedisConn>Conn)
 {
-	_conn_pool.push_back(Conn);
+	if(Conn)
+		_conn_pool.push_back(Conn);
 }
 
 std::shared_ptr<RedisConn> RedisConnPool::NewConntion()

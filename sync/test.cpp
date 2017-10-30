@@ -1,12 +1,13 @@
 #include "RedisClient.h"
 #include <iostream>
+#include <unistd.h>
 
 int main()
 {
-	RedisOpt Opt("192.168.1.222",20000);
+	RedisOpt Opt("127.0.0.1",6379);
 	RedisClient Client(Opt);
 	string value;
-	for (int i = 0; i < 2; i++)
+	for (;;)
 	{
 
 		int ret = Client.Get("zhanyitet", value);
@@ -18,6 +19,7 @@ int main()
 		{
 			cout << "get failed ret " << ret << endl;
 		}
+		sleep(3);
 	}
 	return 0;
 }

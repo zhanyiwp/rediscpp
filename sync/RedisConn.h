@@ -35,7 +35,6 @@ class RedisConn
 {
 public:
 	RedisConn(RedisOpt &Opt);
-	//RedisConn(const string &Host, unsigned int Port, const string &Password, struct timeval	Timeout);
 	~RedisConn();
 
 	int Connect() ;
@@ -48,16 +47,18 @@ public:
 		{
 			if (0 != Connect())
 			{
-				return NULL;
+				return nullptr;
 			}
 		}
 		return _ctx; 
 	}
+
 	ConnState	GetStatus() 
 	{ 
 		return  _status; 
 	}
-
+	
+	void SetStatus(ConnState Status){_status = Status;}
 private:
 	int Auth();
 	inline void FreeCtx() 
@@ -65,7 +66,7 @@ private:
 		if (_ctx)
 		{
 			redisFree(_ctx);
-			_ctx = NULL;
+			_ctx = nullptr;
 		}
 	}
 
@@ -78,11 +79,11 @@ private:
 
 private:
 	// redis connector context
-	redisContext*	_ctx;
+	redisContext*		_ctx;
 	string				_host;          // redis host
 	unsigned int		_port;          // redis sever port
 	string				_password;         // redis server password
 	struct timeval		_timeout;
-	ConnState	_status;    // redis connection status
-	unsigned long long _last_active_time;
+	ConnState			_status;    // redis connection status
+	unsigned long long	_last_active_time;
 };

@@ -37,7 +37,7 @@ int RedisConn::Connect()
 	int Ret = -1;
 	FreeCtx();
 	_ctx = redisConnectWithTimeout(_host.c_str(), _port, _timeout);
-	if (NULL == _ctx || _ctx->err)
+	if (nullptr == _ctx || _ctx->err)
 	{
 		FreeCtx();
 		return Ret;
@@ -59,7 +59,7 @@ int RedisConn::Auth()
 	else 
 	{
 		redisReply *Reply = static_cast<redisReply *>(redisCommand(_ctx, "auth %s", _password.c_str()));
-		if ((NULL == Reply) || (strcasecmp(Reply->str, "OK") != 0))
+		if ((nullptr == Reply) || (strcasecmp(Reply->str, "OK") != 0))
 		{
 			Ret = -1;
 		}
