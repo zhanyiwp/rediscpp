@@ -245,7 +245,7 @@ IntResult RedisClient::BitOp(const string& Op, const string& DestKey, const vect
 		Result.Set(CMD_OPERATE_FAILED, "Key is empty");
 		return Result;
 	}
-	//to do 省掉这次复制
+	//to do 鐪佹帀杩欐澶嶅埗
 	vector<string> Cmd;
 	Cmd.push_back(Op);
 	Cmd.push_back(DestKey);
@@ -311,6 +311,7 @@ StringResult RedisClient::Get(const string& Key)
 		return Result;
 	}
 	_cmd.Command(RT_STRING, Result, &Result.val, "get %s", Key.c_str());
+	return Result;
 }
 
 IntResult RedisClient::GetBit(const string& Key, int Offset)
@@ -407,7 +408,7 @@ StatusResult RedisClient::Mset(const map<string, string>& KeyValues)
 		return Result;
 	}
 	
-	// to do 省掉这次复制
+	// to do 鐪佹帀杩欐澶嶅埗
 	vector<string> Cmd;
 	map<string, string>::const_iterator it = KeyValues.begin();
 	for (; it != KeyValues.end(); ++it)
@@ -427,7 +428,7 @@ BoolResult RedisClient::MsetNx(const map<string, string>& KeyValues)
 		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
 		return Result;
 	}
-	// to do 省掉这次复制
+	// to do 鐪佹帀杩欐澶嶅埗
 	vector<string> Cmd;
 	map<string, string>::const_iterator it = KeyValues.begin();
 	for (; it != KeyValues.end(); ++it)
@@ -561,7 +562,7 @@ IntResult RedisClient::Hdel(const string& Key, const vector<string>& Fields)
 		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
 		return Result;
 	}
-	// to do 省掉复制
+	// to do 鐪佹帀澶嶅埗
 	vector<string> Cmd;
 	Cmd.push_back(Key);
 	vector<string>::const_iterator it = Fields.begin();
@@ -573,92 +574,108 @@ IntResult RedisClient::Hdel(const string& Key, const vector<string>& Fields)
 	return Result;
 }
 
-int RedisClient::hexists(const string& key, const string& field, void *data)
+BoolResult RedisClient::Hexists(const string& Key, const string& Field)
 {
-	if (key.empty() || field.empty())
+	BoolResult Result;
+	if (Key.empty() || Field.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hexists %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "hexists %s %s", key.c_str(), field.c_str());
+	_cmd.Command(RT_BOOL, Result, &Result.val, "hexists %s %s", Key.c_str(),Field.c_str());
+	return Result;
 }
 
-int RedisClient::hget(const string& key, const string& field, void *data)
+StringResult RedisClient::Hget(const string& Key, const string& Field)
 {
-	if (key.empty() || field.empty())
+	StringResult Result;
+	if (Key.empty() || Field.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hget %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_string_relpy, data, "hget %s %s", key.c_str(), field.c_str());
+	_cmd.Command(RT_STRING, Result, &Result.val, "hget %s %s", Key.c_str(),Field.c_str());
+	return Result;
 }
 
-int RedisClient::hgetall(const string& key, void *data)
+StringStringMapResult RedisClient::HgetAll(const string& Key)
 {
-	if (key.empty())
+	StringStringMapResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hgetall %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_ss_map_reply, data, "hgetall %s", key.c_str());
+	_cmd.Command(RT_STRING_STRING_MAP, Result, &Result.val, "hgetall %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::hincrby(const string& key, const string& field, int64_t incr, void *data)
+IntResult RedisClient::HincrBy(const string& Key, const string& Field, int64_t Incr)
 {
-	if (key.empty() || field.empty())
+	IntResult Result;
+	if (Key.empty() || Field.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hincrby %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "hincrby %s %s %ld", key.c_str(), field.c_str(), incr);
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "hincrby %s %s %ld", Key.c_str(),Field.c_str(),Incr);
+	return Result;
 }
 
-int RedisClient::hincrbyfloat(const string& key, const string& field, float incr, void *data)
+FloatResult RedisClient::HincrByFloat(const string& Key, const string& Field, float Incr)
 {
-	if (key.empty() || field.empty())
+	FloatResult Result;
+	if (Key.empty() || Field.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hincrbyfloat %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_string_relpy, data, "hincrbyfloat %s %s %f", key.c_str(), field.c_str(), incr);
+	_cmd.Command(RT_FLOAT, Result, &Result.val, "hincrbyfloat %s %s %f", Key.c_str(),Field.c_str(),Incr);
+	return Result;
 }
 
-int RedisClient::hkeys(const string& key, void *data)
+StringArrayResult RedisClient::Hkeys(const string& Key)
 {
-	if (key.empty())
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hkeys %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_slist_relpy, data, "hkeys %s", key.c_str());
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "hkeys %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::hlen(const string& key, void *data)
+IntResult RedisClient::Hlen(const string& Key)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hlen %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "hlen %s", key.c_str());
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "hlen %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::hmget(const string& key, const vector<string>& fields, void *data)
+StringArrayResult RedisClient::Hmget(const string& Key, const vector<string>& Fields)
 {
-	if (key.empty() || fields.empty())
+	StringArrayResult Result;
+	if (Key.empty() || Fields.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hmget %s key \n", key.c_str());
-	vector<string> cmd;
-	cmd.push_back("hmget");
-	cmd.push_back(key);
-	vector<string>::const_iterator it = fields.begin();
-	for (; it != fields.end(); ++it)
+	// to do 鐪佹帀澶嶅埗
+	vector<string> Cmd;
+	Cmd.push_back(Key);
+	vector<string>::const_iterator it = Fields.begin();
+	for (; it != Fields.end(); ++it)
 	{
-		cmd.push_back(*it);
+		Cmd.push_back(*it);
 	}
-	return m_pcmd->exec_commandargv(em_slist_relpy, data, cmd);
+	_cmd.vCommand(RT_STRING_ARRAY, "hmget", Cmd, Result, &Result.val);
+	return Result;
 }
 
 int RedisClient::hmset(const string& key, const vector<pair<string, string> >& field_val, void *data)
@@ -1446,7 +1463,7 @@ int RedisClient::raw_redis_cmd(reply_type type, void *data, const char* cmd, ...
 		printf("get connection failed \n");
 		return -1;
 	}
-	if (!pconn->valid_conn()) //连接无效
+	if (!pconn->valid_conn()) //杩炴帴鏃犳晥
 	{
 		printf("connection invalid \n");
 		pconn->try_connect();

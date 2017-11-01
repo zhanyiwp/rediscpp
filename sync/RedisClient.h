@@ -174,28 +174,28 @@ public:
 	IntResult Hdel(const string& Key, const vector<string>& Fields);
 
 	//hexists cmd
-	int Hexists(const string& Key, const string& Field);
+	BoolResult Hexists(const string& Key, const string& Field);
 
 	// hget cmd 
-	int Hget(const string& Key, const string& Field, string &Result);
+	StringResult Hget(const string& Key, const string& Field);
 
 	// hgetall cmd
-	int HgetAll(const string& Key, map<string,string>&Result);
+	StringStringMapResult HgetAll(const string& Key);
 
 	//hincrby cmd
-	int HincrBy(const string& Key, const string& Field, int64_t Incr, int64_t& Value);
+	IntResult HincrBy(const string& Key, const string& Field, int64_t Incr);
 
 	//hincrbyfloat cmd 
-	int HincrByFloat(const string& Key, const string& Field, float Incr, float& Value);
+	FloatResult HincrByFloat(const string& Key, const string& Field, float Incr);
 
 	//hkeys cmd 
-	int Hkeys(const string& Key, vector<string> &Keys);
+	StringArrayResult Hkeys(const string& Key);
 
 	//hlen cmd
-	int Hlen(const string& Key, int64_t& Count);
+	IntResult Hlen(const string& Key);
 
 	//hmget cmd 
-	int Hmget(const string& Key, const vector<string>& Fields, vector<string> &Values);
+	StringArrayResult Hmget(const string& Key, const vector<string>& Fields);
 
 	//int Hscan(const string& Key, int64_t cursor,void *data) [match pattern] [count count]
 

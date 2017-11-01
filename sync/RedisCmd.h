@@ -86,6 +86,13 @@ struct FloatResult :public BaseResult
 	float val;
 };
 
+struct StringStringMapResult :public BaseResult
+{
+	const map<string,string> &GetVal()const { return val; }
+	map<string,string> val;
+};
+
+
 class RedisCtxGuard
 {
 public:
