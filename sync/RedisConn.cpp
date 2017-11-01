@@ -68,7 +68,11 @@ int RedisConn::Auth()
 			Ret = 0;
 			_status = CS_AUTHENTICATION;
 		}
-		freeReplyObject(Reply);
+		if (Reply)
+		{
+			freeReplyObject(Reply);
+			Reply = nullptr;
+		}
 	}
 	return Ret;
 }

@@ -4,20 +4,48 @@
 
 int main()
 {
-	RedisOpt Opt("127.0.0.1",6379);
+	RedisOpt Opt("192.168.1.222",20000);
 	RedisClient Client(Opt);
-	string value;
 	for (;;)
 	{
 
-		int ret = Client.Get("zhanyitet", value);
-		if (0 == ret)
+		StringResult Result = Client.Get("zhanyitet");
+		if (Result.Success())
 		{
-			cout << "get result " << value << endl;
+			cout << "get result " << Result.GetVal() << endl;
 		}
 		else
 		{
-			cout << "get failed ret " << ret << endl;
+			cout << "get failed : " << Result.GetErr() << endl;
+		}
+		
+		IntResult Result1 = Client.TTL("zhanyitet");
+		if (Result1.Success())
+		{
+			cout << "get ttl success " << (int)Result1.GetVal() << endl;
+		}
+		else
+		{
+			cout << "get ttl failed ret " << Result.GetErr() << endl;
+		}
+		vector<string>Keys;
+		Keys.push_back("zhanyitest");
+		Keys.push_back("zhanyitest11");
+		Keys.push_back("zhanyitest22");
+		Keys.push_back("zhanyitest33");
+		StringArrayResult ResultA = Client.Mget(Keys);
+		if (ResultA.Success())
+		{
+			cout << "Mget  success ";
+			for (auto i : ResultA.GetVal())
+			{
+				cout << i << " " ;
+			}
+			cout << endl;
+		}
+		else
+		{
+			cout << "Mget failed ret " << Result.GetErr() << endl;
 		}
 		sleep(3);
 	}

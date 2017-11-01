@@ -4,6 +4,7 @@
 #include <string>
 #include <list>
 #include <time.h>
+#include <stdio.h>
 
 #pragma once
 
@@ -65,6 +66,7 @@ private:
 	{
 		if (_ctx)
 		{
+			printf("free redis\n");
 			redisFree(_ctx);
 			_ctx = nullptr;
 		}
