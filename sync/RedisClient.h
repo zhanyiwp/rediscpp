@@ -55,10 +55,10 @@ public:
 	BoolResult Persist(const string& Key);
 
 	// pexpire cmd
-	BoolResult Pexpire(const string& Key, uint32_t MilliSec);
+	BoolResult PExpire(const string& Key, uint32_t MilliSec);
 
 	// pexpireat cmd
-	BoolResult Pexpireat(const string&Key, uint64_t Timestamp);
+	BoolResult PExpireAt(const string&Key, uint64_t Timestamp);
 
 	// pttl cmd 
 	IntResult PTTL(const string& Key);
@@ -70,7 +70,7 @@ public:
 	StatusResult Rename(const string& Key, const string& NewKey);
 
 	// renamenx cmd
-	BoolResult Renamenx(const string& Key, const string& NewKey);
+	BoolResult RenameNX(const string& Key, const string& NewKey);
 
 	// restore cmd
 	StatusResult Restore(const string& Key, int64_t TTL, const string& SerializedValue, bool Repalce = false);
@@ -112,7 +112,7 @@ public:
 	IntResult Decr(const string& Key);
 
 	// decrby cmd
-	IntResult Decrby(const string& Key, int64_t By);
+	IntResult DecrBy(const string& Key, int64_t By);
 
 	// get cmd
 	StringResult Get(const string& Key);
@@ -136,17 +136,16 @@ public:
 	FloatResult IncrByFloat(const string& Key, float Incr);
 
 	// mget cmd
-	StringArrayResult Mget(const vector<string>& Keys);
-
-#if 1
-	// mset cmd
-	StatusResult Mset(const map<string, string>& KeyValues);
+	StringArrayResult MGet(const vector<string>& Keys);
 
 	// mset cmd
-	BoolResult MsetNx(const map<string, string>& KeyValues);
+	StatusResult MSet(const vector<pair<string, string> >& KeyValues);
+
+	// mset cmd
+	BoolResult MSetNX(const vector<pair<string, string> >& KeyValues);
 
 	// psetex cmd
-	StatusResult PsetEx(const string& Key, int64_t MilliSeconds, const string& Val);
+	StatusResult PSetEX(const string& Key, int64_t MilliSeconds, const string& Val);
 
 	// set cmd
 	StatusResult Set(const string& Key, const string& Value);
@@ -157,252 +156,246 @@ public:
 	IntResult SetBit(const string& Key, uint32_t Offset, int64_t NewBitValue);
 
 	// setex 
-	StatusResult SetEx(const string& Key, int Seconds, const string& Value);
+	StatusResult SetEX(const string& Key, int Seconds, const string& Value);
 
 	// setnx
-	BoolResult SetNx(const string& Key, const string& Value);
+	BoolResult SetNX(const string& Key, const string& Value);
 
 	//setrange cmd 
 	IntResult SetRange(const string& Key, uint32_t Offset, const string& Value);
 
 	//strlen cmd 
-	IntResult Strlen(const string& Key);
+	IntResult StrLen(const string& Key);
 
 	/***********************hash cmd*****************************/
 
 	//hdel cmd
-	IntResult Hdel(const string& Key, const vector<string>& Fields);
+	IntResult HDel(const string& Key, const vector<string>& Fields);
 
 	//hexists cmd
-	BoolResult Hexists(const string& Key, const string& Field);
+	BoolResult HExists(const string& Key, const string& Field);
 
 	// hget cmd 
-	StringResult Hget(const string& Key, const string& Field);
+	StringResult HGet(const string& Key, const string& Field);
 
 	// hgetall cmd
-	StringStringMapResult HgetAll(const string& Key);
+	StringStringMapResult HGetAll(const string& Key);
 
 	//hincrby cmd
-	IntResult HincrBy(const string& Key, const string& Field, int64_t Incr);
+	IntResult HIncrBy(const string& Key, const string& Field, int64_t Incr);
 
 	//hincrbyfloat cmd 
-	FloatResult HincrByFloat(const string& Key, const string& Field, float Incr);
+	FloatResult HIncrByFloat(const string& Key, const string& Field, float Incr);
 
 	//hkeys cmd 
-	StringArrayResult Hkeys(const string& Key);
+	StringArrayResult HKeys(const string& Key);
 
 	//hlen cmd
-	IntResult Hlen(const string& Key);
+	IntResult HLen(const string& Key);
 
 	//hmget cmd 
-	StringArrayResult Hmget(const string& Key, const vector<string>& Fields);
+	StringArrayResult HMGet(const string& Key, const vector<string>& Fields);
 
 	//int Hscan(const string& Key, int64_t cursor,void *data) [match pattern] [count count]
 
 	//hmset cmd 
-	int Hmset(const string& Key, const vector<pair<string, string> >& FieldVal);
-	int Hmset(const string& Key, const map<string, string>& FieldVal);
+	StatusResult HMSet(const string& Key, const vector<pair<string, string> >& FieldVal);
+	//StatusResult Hmset(const string& Key, const vector<pair<string, string> >& FieldVal);
 
 	//hset cmd
-	int Hset(const string& Key, const string& Field, const string& Value);
+	BoolResult HSet(const string& Key, const string& Field, const string& Value);
 
 	//hsetnx cmd
-	int HsetNx(const string& Key, const string& Field, const string& Value);
+	BoolResult HSetNX(const string& Key, const string& Field, const string& Value);
 
 	//hstrlen cmd
-	int Hstrlen(const string& Key, const string& Field, int64_t& Len);
+	IntResult HStrLen(const string& Key, const string& Field);
 
 	//hvals cmd
-	int Hvals(const string& Key, vector<string> &Values);
+	StringArrayResult HVals(const string& Key);
 
 	/***********************list cmd*****************************/
 
 	//blpop cmd 
-	int Blpop(const vector<string>& Keys, int Timeout, map<string, string>& Result);
+	StringArrayResult BLPop(vector<string>& Keys, int Timeout);
 
 	//brpop cmd
-	int Brpop(const vector<string>& Keys, int Timeout, map<string, string>& Result);
+	StringArrayResult BRPop(vector<string>& Keys, int Timeout);
 
 	//brpoplpush cmd
-	int BrpopLpush(const string& Src, const string& Dst, int Timeout, pair<string, float>& Result);
+	StringArrayResult BRPopLPush(const string& Src, const string& Dst, int Timeout);
 
 	//lindex cmd
-	int Lindex(const string& Key, int64_t index, string &Value);
+	StringResult LIndex(const string& Key, int64_t index);
 
 	//linsert cmd 
-	int Linsert(const string& Key, const list_insert_type Type, const string& Pivot, const string& Value);
+	IntResult LInsert(const string& Key, const list_insert_type Type, const string& Pivot, const string& Value);
+	IntResult LInsertBefore(const string& Key, const string& Pivot, const string& Value);
+	IntResult LInsertAfter(const string& Key, const string& Pivot, const string& Value);
 
 	//llen cmd
-	int Llen(const string& Key, int64_t& Len);
+	IntResult LLen(const string& Key);
 
 	//lpop cmd
-	int Lpop(const string& Key, string& Value);
+	StringResult LPop(const string& Key);
 
 	//lpush cmd 
-	int Lpush(const string& Key, const vector<string>& Values, int64_t& Len);
+	IntResult LPush(const string& Key, const vector<string>& Values);
 
 	//lpushx cmd
-	int Lpushx(const string& Key, const string& Value, int64_t& Len);
+	IntResult LPushX(const string& Key, const string& Value);
 
 	//lrange cmd
-	int Lrange(const string& Key, int64_t Start, int64_t Stop, vector<string>& Values);
+	StringArrayResult LRange(const string& Key, int64_t Start, int64_t Stop);
 
 	//lpushx cmd
-	int Lrem(const string& Key, int Count, const string& Value, int64_t &RemNum);
+	IntResult LRem(const string& Key, int64_t Count, const string& Value);
 
-	// to do 
-	//lset cmd callback:status_reply
-	int Lset(const string& Key, int index, const string& value, void *data);
+	//lset cmd
+	StatusResult LSet(const string& Key, int64_t Index, const string& Value);
 
-	//ltrim cmd callback:status_reply
-	int Ltrim(const string& Key, int start, int end, void *data);
+	//ltrim cmd
+	StatusResult LTrim(const string& Key, int64_t Start, int64_t End);
 
-	//rpop cmd callback:sting_reply
-	int Rpop(const string& Key, void *data);
+	//rpop cmd
+	StringResult RPop(const string& Key);
 
-	//rpoplpush cmd callback:sting_reply
-	int RpopLpush(const string& src, const string& dst, void *data);
+	//rpoplpush cmd
+	StringResult RPopLPush(const string& Src, const string& Dst);
 
-	//rpush cmd callback:integer_reply
-	int Rpush(const string& Key, const vector<string>& values, void *data);
+	//rpush cmd 
+	IntResult RPush(const string& Key, const vector<string>& Values);
 
-	//rpushx cmd callback:integer_reply
-	int Rpushx(const string& Key, const string& value, void *data);
+	//rpushx cmd
+	IntResult RPushX(const string& Key, const string& Value);
 
 	/***********************set cmd*****************************/
 
-	//sadd cmd callback:integer_reply
-	int Sadd(const string& Key, const vector<string>& members, void *data);
+	//sadd cmd
+	IntResult SAdd(const string& Key, const vector<string>& Members);
 
-	//sadd cmd callback:integer_reply
-	int Scard(const string& Key, void *data);
+	//sadd cmd
+	IntResult SCard(const string& Key);
 
-	//sdiff cmd callback:string_list_reply 
-	int Sdiff(const vector<string>& keys, void *data);
+	//sdiff cmd 
+	StringArrayResult SDiff(const vector<string>& Keys);
 
-	//sdiffstore cmd callback:integer_reply
-	int SdiffStore(const string& dst, const vector<string>& keys, void *data);
+	//sdiffstore cmd
+	IntResult SDiffStore(const string& Dst, const vector<string>& Keys);
 
-	//sinter cmd callback:string_list_reply 
-	int Sinter(const vector<string>& keys, void *data);
+	//sinter cmd
+	StringArrayResult SInter(const vector<string>& Keys);
 
-	//sinterstore cmd callback:integer_reply
-	int SinterStore(const string& dst, const vector<string>& keys, void *data);
+	//sinterstore cmd
+	IntResult SInterStore(const string& Dst, const vector<string>& Keys);
 
-	//sismember cmd callback:integer_reply
-	int Sismember(const string& Key, const string& member, void *data);
+	//sismember cmd
+	BoolResult SIsMember(const string& Key, const string& Member);
 
-	//smembers cmd callback:string_list_reply 
-	int Smembers(const string& Key, void *data);
+	//smembers cmd
+	StringArrayResult SMembers(const string& Key);
 
-	//smove cmd callback:integer_reply
-	int Smove(const string& src, const string& dst, const string& member, void *data);
+	//smove cmd 
+	BoolResult SMove(const string& Src, const string& Dst, const string& Member);
 
-	//spop cmd callback:string_reply
-	int Spop(const string& Key, void *data);
-	//int spop(const string& Key, int count,void *data);
+	//spop cmd
+	StringResult SPop(const string& Key);
+	StringArrayResult SPopN(const string& Key, int64_t Count);
 
-	//srandmember cmd callback:string_reply
-	int SrandMember(const string& Key, void *data);
+	//srandmember cmd
+	StringResult SRandMember(const string& Key);
+	StringArrayResult SRandMemberN(const string& Key, int64_t Count);
 
-	//srandmember cmd callback:string_list_reply 
-	int SrandMember(const string& Key, int count, void *data);
-
-	//srem cmd callback:integer_reply
-	int Srem(const string& Key, const vector<string>& members, void *data);
+	//srem cmd
+	IntResult SRem(const string& Key, const vector<string>& Members);
 
 	//int Sscan(const string &Key,int64_t cursor) [match pattern] [count count]
 
-	//sunion cmd callback:string_list_reply 
-	int Sunion(const vector<string>& keys, void *data);
+	//sunion cmd 
+	StringArrayResult SUnion(const vector<string>& Keys);
 
-	//sunionstore cmd callback:integer_reply
-	int SunionStore(const string& dst, const vector<string>& keys, void *data);
+	//sunionstore cmd
+	IntResult SUnionStore(const string& Dst, const vector<string>& Keys);
 
 	/***********************zset cmd*****************************/
 
-	//zadd cmd callback:integer_reply
-	int Zadd(const string& Key, const vector<pair<float, string> >& score_mem, void *data);
+	//zadd cmd
+	IntResult ZAdd(const string& Key, const vector<pair<float, string> >& ScoreMem);
+	IntResult ZAddNX(const string& Key, const vector<pair<float, string> >& ScoreMem);
+	IntResult ZAddXX(const string& Key, const vector<pair<float, string> >& ScoreMem);
+	IntResult ZAddCh(const string& Key, const vector<pair<float, string> >& ScoreMem);
+	IntResult ZAddNXCh(const string& Key, const vector<pair<float, string> >& ScoreMem);
+	IntResult ZAddXXCh(const string& Key, const vector<pair<float, string> >& ScoreMem);
 
-	//zcard cmd callback:integer_reply
-	int Zcard(const string& Key, void *data);
+	//zcard cmd
+	IntResult ZCard(const string& Key);
 
-	//zcount cmd callback:integer_reply.  min and max must can convert to float
-	int Zcount(const string& Key, const string& min, const string& max, void *data);
+	//zcount cmd  min and max must can convert to float
+	IntResult ZCount(const string& Key, const string& Min, const string& Max);
 
-	//zincrby cmd callback:double_reply
-	int ZincrBy(const string& Key, const double incr, const string& member, void *data);
+	//zincrby cmd
+	FloatResult ZincrBy(const string& Key, const float Incr, const string& Member);
 
-	//int ZinterStore();
-	//int ZlexCount(const string& Key, const string& min, const string& max,void *data);
+	//IntResult ZinterStore();
 
-	//zrange cmd.  callback:string_list_reply. if withscores is true callback:sd_map_reply 
-	int Zrange(const string& Key, int start, int end, void *data, bool withscores = false);
+	//zlexcount cmd
+	IntResult ZlexCount(const string& Key, const string& Min, const string& Max);
 
-	//int ZrangeByLex(const string& Key, const string& min, const string& max,void *data) [limit offset count]
+	//zrange cmd 
+	StringArrayResult ZRange(const string& Key, int64_t Start, int64_t End);
+	StringFloatMapResult ZRangeWithScores(const string& Key, int64_t Start, int64_t End);
+	 
+	//zrangebylex cmd
+	StringArrayResult ZRangeByLex(const string& Key, const string& Min, const string& Max);
+	StringArrayResult ZRangeByLex(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count);
 
-	//zrangebyscore cmd.zrangebyscore callback:string_list_reply. if withscores is true callback:sd_map_reply 
-	int ZrangeByScore(const string& Key, const string& min, const string& max, void *data, bool withscores = false);
-	int ZrangeByScore(const string& Key, const string& min, const string& max, int offset, int count, void *data, bool withscores = false);
+	//zrangebyscore cmd
+	StringArrayResult ZRangeByScore(const string& Key, const string& Min, const string& Max);
+	StringArrayResult ZRangeByScore(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count);
+	StringFloatMapResult ZRangeByScoreWithScores(const string& Key, const string& Min, const string& Max);
+	StringFloatMapResult ZRangeByScoreWithScores(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count);
 
-	//zrank cmd callback:integer_reply.
-	int Zrank(const string& Key, const string& member, void *data);
+	//zrank cmd
+	IntResult ZRank(const string& Key, const string& Member);
 
-	//zrem cmd callback:integer_reply.
-	int Zrem(const string& Key, const vector<string>& members, void *data);
+	//zrem cmd
+	IntResult ZRem(const string& Key, const vector<string>& Members);
 
-	//int ZremRangeByLex(const string& Key, const string& min, const string& max,void *data);
+	//zremrangebylex
+	IntResult ZRemRangeByLex(const string& Key, const string& Min, const string& Max);
 
-	//zremrangebyrank cmd callback:integer_reply.
-	int ZremRangeByRank(const string& Key, int start, int stop, void *data);
+	//zremrangebyrank cmd
+	IntResult ZRemRangeByRank(const string& Key, int64_t Start, int64_t End);
 
-	//zremrangebyscore cmd callback:integer_reply. min and max must can convert to float
-	int ZremRangeByScore(const string& Key, const string& min, const string& max, void *data);
+	//zremrangebyscore cmd  min and max must can convert to float
+	IntResult ZRemRangeByScore(const string& Key, const string& Min, const string& Max);
 
-	//zrevrange cmd. zrange callback:string_list_reply. if withscores is true callback:sd_map_reply 
-	int Zrevrange(const string& Key, int start, int stop, void *data, bool withscores = false);
+	//zrevrange cmd
+	StringArrayResult ZRevRange(const string& Key, int64_t Start, int64_t End);
+	StringFloatMapResult ZRevRangeWithScores(const string& Key, int64_t Start, int64_t End);
 
-	//int ZrevrangeByLex(const string& Key, const string& min, const string& max,void *data) [limit offset count]
+	//zrevrangebylex cmd
+	StringArrayResult ZRevRangeByLex(const string& Key, const string& Min, const string& Max);
+	StringArrayResult ZRevRangeByLex(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count);
 
-	//zrangebyscore cmd.zrangebyscore callback:string_list_reply. if withscores is true callback:sd_map_reply 
-	int ZrevRangeByScore(const string& Key, const string& min, const string& max, void *data, bool withscores = false);
-	int ZrevRangeByScore(const string& Key, const string& min, const string& max, int offset, int count, void *data, bool withscores = false);
+	//zrevrangebyscore cmd
+	StringArrayResult ZRevRangeByScore(const string& Key, const string& Min, const string& Max);
+	StringArrayResult ZRevRangeByScore(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count);
+	StringFloatMapResult ZRevRangeByScoreWithScores(const string& Key, const string& Min, const string& Max);
+	StringFloatMapResult ZRevRangeByScoreWithScores(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count);
 
-	//zrevrank cmd callback:integer_reply.
-	int ZrevRank(const string& Key, const string& member, void *data);
+	//zrevrank cmd
+	IntResult ZRevRank(const string& Key, const string& Member);
 
 	//int Zscan(const string &Key,int64_t cursor) [match pattern] [count count]
 
-	//zscore cmd callback:double_reply. // 
-	int Zscore(const string& Key, const string& member, void *data);
+	//zscore cmd
+	FloatResult Zscore(const string& Key, const string& Member);
 
-	//int ZunionStore();
+	IntResult ZunionStore(const string& Dst, vector<string>& Keys, const string &Aggregate="SUM");
+	IntResult ZunionStoreWeights(const string& Dst, vector<string>& Keys, const vector<float>& Weights, const string &Aggregate="SUM");
 
 	/***********************pub/sub cmd *****************************/
-
-	//publish cmd callback:integer_reply
-	//int publish(const string& channel, const string& message, void *data);
-
-	//psubscribe cmd callback:array_reply
-	//int psubscribe(const vector<string>& pattern, void *data);
-
-	//subscribe cmd callback:array_reply
-	//int subscribe(const vector<string>& channels, void *data);
-
-	//punsubscribe cmd.callback:array_reply  reply in psubscribe`s callback
-	//int punsubscribe(const vector<string>& pattern, void *data);
-
-	//unsubscribe cmd.callback:array_reply reply in subscribe`s callback
-	//int unsubscribe(const vector<string>& channels, void *data);
-
-	// pubsub channels callback:string_list_reply
-	//int pubsub_channels(const string& channel, void *data);
-
-	//pubsub numsub cmd.callback:array_reply
-	//int pubsub_numsub(const vector<string>& channels, void *data);
-
-	//pubsub numpat cmd callback:integer_reply
-	//int pubsub_numpat(void *data);
 
 	/***********************transaction cmd *****************************/
 	// discard  cmd
@@ -427,7 +420,12 @@ public:
 	//SELECT
 
 	/***********************server cmd *****************************/
-#endif
+
+	/***********************raw redis cmd *****************************/
+	//直接执行redis命令 当上述封装的命令不能满足要求时 可以使用这些接口执行特定redis命令,一般不使用
+	redisReply *RawCommand(const char* cmd, ...);
+	redisReply *RawCommandv(const vector<string> &Cmd);
+
 private:
 	RedisCmd _cmd;
 };

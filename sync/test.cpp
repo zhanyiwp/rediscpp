@@ -33,7 +33,7 @@ int main()
 		Keys.push_back("zhanyitest11");
 		Keys.push_back("zhanyitest22");
 		Keys.push_back("zhanyitest33");
-		StringArrayResult ResultA = Client.Mget(Keys);
+		StringArrayResult ResultA = Client.MGet(Keys);
 		if (ResultA.Success())
 		{
 			cout << "Mget  success ";

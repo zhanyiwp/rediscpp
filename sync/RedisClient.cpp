@@ -95,7 +95,7 @@ BoolResult RedisClient::Persist(const string& Key)
 	return Result;
 }
 
-BoolResult RedisClient::Pexpire(const string& Key, uint32_t MilliSec)
+BoolResult RedisClient::PExpire(const string& Key, uint32_t MilliSec)
 {
 	BoolResult Result;
 	if (Key.empty())
@@ -107,7 +107,7 @@ BoolResult RedisClient::Pexpire(const string& Key, uint32_t MilliSec)
 	return Result;
 }
 
-BoolResult RedisClient::Pexpireat(const string&Key, uint64_t Timestamp)
+BoolResult RedisClient::PExpireAt(const string&Key, uint64_t Timestamp)
 {
 	BoolResult Result;
 	if (Key.empty())
@@ -150,7 +150,7 @@ StatusResult RedisClient::Rename(const string& Key, const string& NewKey)
 	return Result;
 }
 
-BoolResult RedisClient::Renamenx(const string& Key, const string& NewKey)
+BoolResult RedisClient::RenameNX(const string& Key, const string& NewKey)
 {
 	BoolResult Result;
 	if (Key.empty() || NewKey.empty())
@@ -245,16 +245,11 @@ IntResult RedisClient::BitOp(const string& Op, const string& DestKey, const vect
 		Result.Set(CMD_OPERATE_FAILED, "Key is empty");
 		return Result;
 	}
-	//to do 省掉这次复制
 	vector<string> Cmd;
+	Cmd.push_back("bitop");
 	Cmd.push_back(Op);
 	Cmd.push_back(DestKey);
-	vector<string>::const_iterator it = Keys.begin();
-	for (; it != Keys.end(); ++it)
-	{
-		Cmd.push_back(*it);
-	}
-	_cmd.vCommand(RT_INTEGER, "bitop", Cmd, Result, &Result.val);
+	_cmd.vCommand(RT_INTEGER, Cmd, Keys, Result, &Result.val);
 	return Result;
 }
 
@@ -290,7 +285,7 @@ IntResult RedisClient::Decr(const string& Key)
 	return Result;
 }
 
-IntResult RedisClient::Decrby(const string& Key, int64_t By)
+IntResult RedisClient::DecrBy(const string& Key, int64_t By)
 {
 	IntResult Result;
 	if (Key.empty())
@@ -386,7 +381,7 @@ FloatResult RedisClient::IncrByFloat(const string& Key, float Incr)
 	return Result;
 }
 
-StringArrayResult RedisClient::Mget(const vector<string>& Keys)
+StringArrayResult RedisClient::MGet(const vector<string>& Keys)
 {
 	StringArrayResult Result;
 	if (Keys.empty())
@@ -398,8 +393,7 @@ StringArrayResult RedisClient::Mget(const vector<string>& Keys)
 	return Result;
 }
 
-#if 1
-StatusResult RedisClient::Mset(const map<string, string>& KeyValues)
+StatusResult RedisClient::MSet(const vector<pair<string, string> >& KeyValues)
 {
 	StatusResult Result;
 	if (KeyValues.empty())
@@ -407,20 +401,11 @@ StatusResult RedisClient::Mset(const map<string, string>& KeyValues)
 		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
 		return Result;
 	}
-	
-	// to do 省掉这次复制
-	vector<string> Cmd;
-	map<string, string>::const_iterator it = KeyValues.begin();
-	for (; it != KeyValues.end(); ++it)
-	{
-		Cmd.push_back(it->first);
-		Cmd.push_back(it->second);
-	}
-	_cmd.vCommand(RT_STATUS, "mget", Cmd, Result, &Result.val);
+	_cmd.vCommand(RT_STATUS, "mget", KeyValues, Result, &Result.val);
 	return Result;
 }
 
-BoolResult RedisClient::MsetNx(const map<string, string>& KeyValues)
+BoolResult RedisClient::MSetNX(const vector<pair<string, string> >& KeyValues)
 {
 	BoolResult Result;
 	if (KeyValues.empty())
@@ -428,19 +413,11 @@ BoolResult RedisClient::MsetNx(const map<string, string>& KeyValues)
 		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
 		return Result;
 	}
-	// to do 省掉这次复制
-	vector<string> Cmd;
-	map<string, string>::const_iterator it = KeyValues.begin();
-	for (; it != KeyValues.end(); ++it)
-	{
-		Cmd.push_back(it->first);
-		Cmd.push_back(it->second);
-	}
-	_cmd.vCommand(RT_BOOL, "msetnx", Cmd, Result, &Result.val);
+	_cmd.vCommand(RT_BOOL, "msetnx", KeyValues, Result, &Result.val);
 	return Result;
 }
 
-StatusResult RedisClient::PsetEx(const string& Key, int64_t MilliSeconds, const string& Val)
+StatusResult RedisClient::PSetEX(const string& Key, int64_t MilliSeconds, const string& Val)
 {
 	StatusResult Result;
 	if (Key.empty() || Val.empty())
@@ -506,7 +483,7 @@ IntResult RedisClient::SetBit(const string& Key, uint32_t Offset, int64_t NewBit
 	return Result;
 }
 
-StatusResult RedisClient::SetEx(const string& Key, int Seconds, const string& Value)
+StatusResult RedisClient::SetEX(const string& Key, int Seconds, const string& Value)
 {
 	StatusResult Result;
 	if (Key.empty() || Value.empty())
@@ -518,7 +495,7 @@ StatusResult RedisClient::SetEx(const string& Key, int Seconds, const string& Va
 	return Result;
 }
 
-BoolResult RedisClient::SetNx(const string& Key, const string& Value)
+BoolResult RedisClient::SetNX(const string& Key, const string& Value)
 {
 	BoolResult Result;
 	if (Key.empty() || Value.empty())
@@ -542,7 +519,7 @@ IntResult RedisClient::SetRange(const string& Key, uint32_t Offset, const string
 	return Result;
 }
 
-IntResult RedisClient::Strlen(const string& Key)
+IntResult RedisClient::StrLen(const string& Key)
 {
 	IntResult Result;
 	if (Key.empty())
@@ -554,7 +531,7 @@ IntResult RedisClient::Strlen(const string& Key)
 	return Result;
 }
 
-IntResult RedisClient::Hdel(const string& Key, const vector<string>& Fields)
+IntResult RedisClient::HDel(const string& Key, const vector<string>& Fields)
 {
 	IntResult Result;
 	if (Key.empty() || Fields.empty())
@@ -562,19 +539,14 @@ IntResult RedisClient::Hdel(const string& Key, const vector<string>& Fields)
 		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
 		return Result;
 	}
-	// to do 省掉复制
 	vector<string> Cmd;
+	Cmd.push_back("hdel");
 	Cmd.push_back(Key);
-	vector<string>::const_iterator it = Fields.begin();
-	for (; it != Fields.end(); ++it)
-	{
-		Cmd.push_back(*it);
-	}
-	_cmd.vCommand(RT_INTEGER, "hdel", Cmd, Result, &Result.val);
+	_cmd.vCommand(RT_INTEGER, Cmd, Fields, Result, &Result.val);
 	return Result;
 }
 
-BoolResult RedisClient::Hexists(const string& Key, const string& Field)
+BoolResult RedisClient::HExists(const string& Key, const string& Field)
 {
 	BoolResult Result;
 	if (Key.empty() || Field.empty())
@@ -586,7 +558,7 @@ BoolResult RedisClient::Hexists(const string& Key, const string& Field)
 	return Result;
 }
 
-StringResult RedisClient::Hget(const string& Key, const string& Field)
+StringResult RedisClient::HGet(const string& Key, const string& Field)
 {
 	StringResult Result;
 	if (Key.empty() || Field.empty())
@@ -598,7 +570,7 @@ StringResult RedisClient::Hget(const string& Key, const string& Field)
 	return Result;
 }
 
-StringStringMapResult RedisClient::HgetAll(const string& Key)
+StringStringMapResult RedisClient::HGetAll(const string& Key)
 {
 	StringStringMapResult Result;
 	if (Key.empty())
@@ -610,7 +582,7 @@ StringStringMapResult RedisClient::HgetAll(const string& Key)
 	return Result;
 }
 
-IntResult RedisClient::HincrBy(const string& Key, const string& Field, int64_t Incr)
+IntResult RedisClient::HIncrBy(const string& Key, const string& Field, int64_t Incr)
 {
 	IntResult Result;
 	if (Key.empty() || Field.empty())
@@ -622,7 +594,7 @@ IntResult RedisClient::HincrBy(const string& Key, const string& Field, int64_t I
 	return Result;
 }
 
-FloatResult RedisClient::HincrByFloat(const string& Key, const string& Field, float Incr)
+FloatResult RedisClient::HIncrByFloat(const string& Key, const string& Field, float Incr)
 {
 	FloatResult Result;
 	if (Key.empty() || Field.empty())
@@ -634,7 +606,7 @@ FloatResult RedisClient::HincrByFloat(const string& Key, const string& Field, fl
 	return Result;
 }
 
-StringArrayResult RedisClient::Hkeys(const string& Key)
+StringArrayResult RedisClient::HKeys(const string& Key)
 {
 	StringArrayResult Result;
 	if (Key.empty())
@@ -646,7 +618,7 @@ StringArrayResult RedisClient::Hkeys(const string& Key)
 	return Result;
 }
 
-IntResult RedisClient::Hlen(const string& Key)
+IntResult RedisClient::HLen(const string& Key)
 {
 	IntResult Result;
 	if (Key.empty())
@@ -658,7 +630,7 @@ IntResult RedisClient::Hlen(const string& Key)
 	return Result;
 }
 
-StringArrayResult RedisClient::Hmget(const string& Key, const vector<string>& Fields)
+StringArrayResult RedisClient::HMGet(const string& Key, const vector<string>& Fields)
 {
 	StringArrayResult Result;
 	if (Key.empty() || Fields.empty())
@@ -666,820 +638,1043 @@ StringArrayResult RedisClient::Hmget(const string& Key, const vector<string>& Fi
 		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
 		return Result;
 	}
-	// to do 省掉复制
 	vector<string> Cmd;
+	Cmd.push_back("hmget");
 	Cmd.push_back(Key);
-	vector<string>::const_iterator it = Fields.begin();
-	for (; it != Fields.end(); ++it)
-	{
-		Cmd.push_back(*it);
-	}
-	_cmd.vCommand(RT_STRING_ARRAY, "hmget", Cmd, Result, &Result.val);
+	_cmd.vCommand(RT_STRING_ARRAY, Cmd, Fields, Result, &Result.val);
 	return Result;
 }
 
-int RedisClient::hmset(const string& key, const vector<pair<string, string> >& field_val, void *data)
+StatusResult RedisClient::HMSet(const string& Key, const vector<pair<string, string> >& FieldVal)
 {
-	if (key.empty() || field_val.empty())
+	StatusResult Result;
+	if (Key.empty() || FieldVal.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hmset %s key \n", key.c_str());
-	vector<string> cmd;
-	cmd.push_back("hmset");
-	cmd.push_back(key);
-	vector<pair<string, string> >::const_iterator it = field_val.begin();
-	for (; it != field_val.end(); ++it)
-	{
-		cmd.push_back(it->first);
-		cmd.push_back(it->second);
-	}
-	return m_pcmd->exec_commandargv(em_status_reply, data, cmd);
+	vector<string> Cmd;
+	Cmd.push_back("hmset");
+	Cmd.push_back(Key);
+	_cmd.vCommand(RT_STATUS, Cmd, FieldVal, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::hset(const string& key, const string& field, const string& value, void *data)
+BoolResult RedisClient::HSet(const string& Key, const string& Field, const string& Value)
 {
-	if (key.empty() || field.empty() || value.empty())
+	BoolResult Result;
+	if (Key.empty() || Field.empty() || Value.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hset %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "hset %s %s %b", key.c_str(), field.c_str(), value.c_str(), value.size());
+	_cmd.Command(RT_BOOL, Result, &Result.val, "hset %s %s %b", Key.c_str(), Field.c_str(), Value.c_str(), Value.size());
+	return Result;
 }
 
-int RedisClient::hsetnx(const string& key, const string& field, const string& value, void *data)
+BoolResult RedisClient::HSetNX(const string& Key, const string& Field, const string& Value)
 {
-	if (key.empty() || field.empty() || value.empty())
+	BoolResult Result;
+	if (Key.empty() || Field.empty() || Value.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hsetnx %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "hsetnx %s %s %b", key.c_str(), field.c_str(), value.c_str(), value.size());
+	_cmd.Command(RT_BOOL, Result, &Result.val, "hsetnx %s %s %b", Key.c_str(), Field.c_str(), Value.c_str(), Value.size());
+	return Result;
 }
 
-int RedisClient::hvals(const string& key, void *data)
+IntResult RedisClient::HStrLen(const string& Key, const string& Field)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || Field.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call hvals %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_slist_relpy, data, "hvals %s", key.c_str());
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "hstrlen %s %s", Key.c_str(), Field.c_str());
+	return Result;
 }
 
-int RedisClient::blpop(const vector<string>& keys, int timeout, void *data)
+StringArrayResult RedisClient::HVals(const string& Key)
 {
-	if (keys.empty())
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call blpop\n");
-	vector<string> cmd;
-	cmd.push_back("blpop");
-	vector<string>::const_iterator it = keys.begin();
-	for (; it != keys.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	cmd.push_back(tostring(timeout));
-	return m_pcmd->exec_commandargv(em_ss_map_reply, data, cmd);
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "hvals %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::brpop(const vector<string>& keys, int timeout, void *data)
+StringArrayResult RedisClient::BLPop(vector<string>& Keys, int Timeout)
 {
-	if (keys.empty())
+	StringArrayResult Result;
+	if (Keys.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call brpop\n");
-	vector<string> cmd;
-	cmd.push_back("brpop");
-	vector<string>::const_iterator it = keys.begin();
-	for (; it != keys.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	cmd.push_back(tostring(timeout));
-	return m_pcmd->exec_commandargv(em_ss_map_reply, data, cmd);
+	Keys.push_back(ToString(Timeout));
+	_cmd.vCommand(RT_STRING_ARRAY, "blpop", Keys, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::brpoplpush(const string& src, const string& dst, int timeout, void *data)
+StringArrayResult RedisClient::BRPop(vector<string>& Keys, int Timeout)
 {
-	if (src.empty() || dst.empty())
+	StringArrayResult Result;
+	if (Keys.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call brpoplpush %s key \n", src.c_str());
-	return m_pcmd->exec_command(em_string_relpy, data, "brpoplpush %s %s %d", src.c_str(), dst.c_str(), timeout);
+	Keys.push_back(ToString(Timeout));
+	_cmd.vCommand(RT_STRING_ARRAY, "brpop", Keys, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::lindex(const string& key, int64_t index, void *data)
+StringArrayResult RedisClient::BRPopLPush(const string& Src, const string& Dst, int Timeout)
 {
-	if (key.empty())
+	StringArrayResult Result;
+	if (Src.empty() || Dst.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call lindex %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_string_relpy, data, "lindex %s %lld", key.c_str(), index);
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "brpoplpush %s %s %d", Src.c_str(), Dst.c_str(), Timeout);
+	return Result;
 }
 
-int RedisClient::linsert(const string& key, const list_insert_type type, const string& pivot, const string& value, void *data)
+StringResult RedisClient::LIndex(const string& Key, int64_t index)
 {
-	if (key.empty() || pivot.empty() || value.empty())
+	StringResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call linsert %s key \n", key.c_str());
-	string stype = (type == em_insert_before) ? "before" : "after";
-	return m_pcmd->exec_command(em_integer_relpy, data, "linsert %s %s %s %b", key.c_str(), stype.c_str(), pivot.c_str(), value.c_str(), value.size());
+	_cmd.Command(RT_STRING, Result, &Result.val, "lindex %s %lld", Key.c_str(), index);
+	return Result;
 }
 
-int RedisClient::llen(const string& key, void *data)
+IntResult RedisClient::LInsert(const string& Key, const list_insert_type Type, const string& Pivot, const string& Value)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || Pivot.empty() || Value.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call llen %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "llen %s", key.c_str());
+	string stype = (Type == em_insert_before) ? "before" : "after";
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "linsert %s %s %b %b", Key.c_str(), stype.c_str(), Pivot.c_str(), Pivot.size(), Value.c_str(), Value.size());
+	return Result;
 }
 
-int RedisClient::lpop(const string& key, void *data)
+IntResult RedisClient::LInsertBefore(const string& Key, const string& Pivot, const string& Value)
 {
-	if (key.empty())
-	{
-		return -1;
-	}
-	printf("call lpop %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_string_relpy, data, "lpop %s", key.c_str());
+	return LInsert(Key, em_insert_before, Pivot, Value);
 }
 
-int RedisClient::lpush(const string& key, const vector<string>& values, void *data)
+IntResult RedisClient::LInsertAfter(const string& Key, const string& Pivot, const string& Value)
 {
-	if (key.empty() || values.empty())
-	{
-		return -1;
-	}
-	printf("call lpush %s key \n", key.c_str());
-	vector<string> cmd;
-	cmd.push_back("lpush");
-	cmd.push_back(key);
-	vector<string>::const_iterator it = values.begin();
-	for (; it != values.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_integer_relpy, data, cmd);
+	return LInsert(Key, em_insert_after, Pivot, Value);
 }
 
-int RedisClient::lpushx(const string& key, const string& value, void *data)
+IntResult RedisClient::LLen(const string& Key)
 {
-	if (key.empty() || value.empty())
+	IntResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call lpushx %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "lpushx %s %b", key.c_str(), value.c_str(), value.size());
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "llen %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::lrange(const string& key, int64_t start, int64_t stop, void *data)
+StringResult RedisClient::LPop(const string& Key)
 {
-	if (key.empty())
+	StringResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call lrange %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_slist_relpy, data, "lrange %s %lld %lld", key.c_str(), start, stop);
+	_cmd.Command(RT_STRING, Result, &Result.val, "lpop %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::lrem(const string& key, int count, const string& value, void *data)
+IntResult RedisClient::LPush(const string& Key, const vector<string>& Values)
 {
-	if (key.empty() || value.empty())
+	IntResult Result;
+	if (Key.empty() || Values.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call lrem %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "lrem %s %d %b", key.c_str(), count, value.c_str(), value.size());
+	vector<string> Cmd;
+	Cmd.push_back("lpush");
+	Cmd.push_back(Key);
+	_cmd.vCommand(RT_INTEGER, Cmd, Values,Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::lset(const string& key, int index, const string& value, void *data)
+IntResult RedisClient::LPushX(const string& Key, const string& Value)
 {
-	if (key.empty() || value.empty())
+	IntResult Result;
+	if (Key.empty() || Value.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call lset %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_status_reply, data, "lset %s %d %b", key.c_str(), index, value.c_str(), value.size());
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "lpushx %s %b", Key.c_str(), Value.c_str(), Value.size());
+	return Result;
 }
 
-int RedisClient::ltrim(const string& key, int start, int end, void *data)
+StringArrayResult RedisClient::LRange(const string& Key, int64_t Start, int64_t Stop)
 {
-	if (key.empty())
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call ltrim %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_status_reply, data, "ltrim %s %d %d", key.c_str(), start, end);
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "lrange %s %lld %lld", Key.c_str(), Start, Stop);
+	return Result;
 }
 
-int RedisClient::rpop(const string& key, void *data)
+IntResult RedisClient::LRem(const string& Key, int64_t Count, const string& Value)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || Value.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call rpop %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_string_relpy, data, "rpop %s", key.c_str());
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "lrem %s %lld %b", Key.c_str(), Count,Value.c_str(), Value.size());
+	return Result;
 }
 
-int RedisClient::rpoplpush(const string& src, const string& dst, void *data)
+StatusResult RedisClient::LSet(const string& Key, int64_t Index, const string& Value)
 {
-	if (src.empty() || dst.empty())
+	StatusResult Result;
+	if (Key.empty() || Value.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call rpoplpush %s key \n", src.c_str());
-	return m_pcmd->exec_command(em_string_relpy, data, "rpoplpush %s %s", src.c_str(), dst.c_str());
+	_cmd.Command(RT_STATUS, Result, &Result.val, "lset %s %lld %b", Key.c_str(), Index, Value.c_str(), Value.size());
+	return Result;
 }
 
-int RedisClient::rpush(const string& key, const vector<string>& values, void *data)
+StatusResult RedisClient::LTrim(const string& Key, int64_t Start, int64_t End)
 {
-	if (key.empty() || values.empty())
+	StatusResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call rpush %s key \n", key.c_str());
-	vector<string> cmd;
-	cmd.push_back("rpush");
-	cmd.push_back(key);
-	vector<string>::const_iterator it = values.begin();
-	for (; it != values.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_integer_relpy, data, cmd);
+	_cmd.Command(RT_STATUS, Result, &Result.val, "ltrim %s %lld %lld", Key.c_str(), Start, End);
+	return Result;
 }
 
-int RedisClient::rpushx(const string& key, const string& value, void *data)
+StringResult RedisClient::RPop(const string& Key)
 {
-	if (key.empty() || value.empty())
+	StringResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call rpushx %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "rpushx %s %b", key.c_str(), value.c_str(), value.size());
+	_cmd.Command(RT_STRING, Result, &Result.val, "rpop %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::sadd(const string& key, const vector<string>& members, void *data)
+StringResult RedisClient::RPopLPush(const string& Src, const string& Dst)
 {
-	if (key.empty() || members.empty())
+	StringResult Result;
+	if (Src.empty() || Dst.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call sadd %s key \n", key.c_str());
-	vector<string> cmd;
-	cmd.push_back("sadd");
-	cmd.push_back(key);
-	vector<string>::const_iterator it = members.begin();
-	for (; it != members.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_integer_relpy, data, cmd);
+	_cmd.Command(RT_STRING, Result, &Result.val, "rpoplpush %s %s", Src.c_str(),Dst.c_str());
+	return Result;
 }
 
-int RedisClient::scard(const string& key, void *data)
+IntResult RedisClient::RPush(const string& Key, const vector<string>& Values)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || Values.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call scard %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "scard %s", key.c_str());
+	vector<string> Cmd;
+	Cmd.push_back("rpush");
+	Cmd.push_back(Key);
+	_cmd.vCommand(RT_INTEGER, Cmd, Values, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::sdiff(const vector<string>& keys, void *data)
+IntResult RedisClient::RPushX(const string& Key, const string& Value)
 {
-	if (keys.empty())
+	IntResult Result;
+	if (Key.empty() || Value.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call sdiff \n");
-	vector<string> cmd;
-	cmd.push_back("sdiff");
-	vector<string>::const_iterator it = keys.begin();
-	for (; it != keys.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_slist_relpy, data, cmd);
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "rpushx %s %b", Key.c_str(), Value.c_str(), Value.size());
+	return Result;
 }
 
-int RedisClient::sdiffstore(const string& dst, const vector<string>& keys, void *data)
+IntResult RedisClient::SAdd(const string& Key, const vector<string>& Members)
 {
-	if (dst.empty() || keys.empty())
+	IntResult Result;
+	if (Key.empty() || Members.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call sdiffstore \n");
-	vector<string> cmd;
-	cmd.push_back("sdiffstore");
-	cmd.push_back(dst);
-	vector<string>::const_iterator it = keys.begin();
-	for (; it != keys.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_integer_relpy, data, cmd);
+	vector<string> Cmd;
+	Cmd.push_back("sadd");
+	Cmd.push_back(Key);
+	_cmd.vCommand(RT_INTEGER, Cmd, Members, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::sinter(const vector<string>& keys, void *data)
+IntResult RedisClient::SCard(const string& Key)
 {
-	if (keys.empty())
+	IntResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call sinter \n");
-	vector<string> cmd;
-	cmd.push_back("sinter");
-	vector<string>::const_iterator it = keys.begin();
-	for (; it != keys.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_slist_relpy, data, cmd);
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "scard %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::sinterstore(const string& dst, const vector<string>& keys, void *data)
+StringArrayResult RedisClient::SDiff(const vector<string>& Keys)
 {
-	if (dst.empty() || keys.empty())
+	StringArrayResult Result;
+	if (Keys.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call sinterstore \n");
-	vector<string> cmd;
-	cmd.push_back("sinterstore");
-	cmd.push_back(dst);
-	vector<string>::const_iterator it = keys.begin();
-	for (; it != keys.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_integer_relpy, data, cmd);
+	_cmd.vCommand(RT_STRING_ARRAY, "sdiff", Keys, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::sismember(const string& key, const string& member, void *data)
+IntResult RedisClient::SDiffStore(const string& Dst, const vector<string>& Keys)
 {
-	if (key.empty() || member.empty())
+	IntResult Result;
+	if (Dst.empty() || Keys.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call sismember %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "sismember %s %s", key.c_str(), member.c_str());
+	vector<string> Cmd;
+	Cmd.push_back("sdiffstore");
+	Cmd.push_back(Dst);
+	_cmd.vCommand(RT_INTEGER, Cmd, Keys, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::smembers(const string& key, void *data)
+StringArrayResult RedisClient::SInter(const vector<string>& Keys)
 {
-	if (key.empty())
+	StringArrayResult Result;
+	if (Keys.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call smembers %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_slist_relpy, data, "smembers %s", key.c_str());
+	_cmd.vCommand(RT_STRING_ARRAY, "sinter", Keys, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::smove(const string& src, const string& dst, const string& member, void *data)
+IntResult RedisClient::SInterStore(const string& Dst, const vector<string>& Keys)
 {
-	if (src.empty() || dst.empty() || member.empty())
+	IntResult Result;
+	if (Dst.empty() || Keys.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call smove %s key \n", src.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "smove %s %s %s", src.c_str(), dst.c_str(), member.c_str());
+	vector<string> Cmd;
+	Cmd.push_back("sinterstore");
+	Cmd.push_back(Dst);
+	_cmd.vCommand(RT_INTEGER, Cmd, Keys, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::spop(const string& key, void *data)
+BoolResult RedisClient::SIsMember(const string& Key, const string& Member)
 {
-	if (key.empty())
+	BoolResult Result;
+	if (Key.empty() || Member.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call spop %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_string_relpy, data, "spop %s", key.c_str());
+	_cmd.Command(RT_BOOL, Result, &Result.val, "sismember %s %b", Key.c_str(), Member.c_str(), Member.size());
+	return Result;
 }
 
-int RedisClient::srandmember(const string& key, void *data)
+StringArrayResult RedisClient::SMembers(const string& Key)
 {
-	if (key.empty())
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call srandmember %s key \n", key.c_str());
-	return m_pcmd->exec_command(em_string_relpy, data, "srandmember %s", key.c_str());
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "smembers %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::srandmember(const string& key, int count, void *data)
+BoolResult RedisClient::SMove(const string& Src, const string& Dst, const string& Member)
 {
-	if (key.empty())
+	BoolResult Result;
+	if (Src.empty() || Dst.empty() || Member.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call srandmember %s %d \n", key.c_str(), count);
-	return m_pcmd->exec_command(em_slist_relpy, data, "srandmember %s %d", key.c_str(), count);
+	_cmd.Command(RT_BOOL, Result, &Result.val, "smove %s %s %b", Src.c_str(), Dst.c_str(), Member.c_str(), Member.size());
+	return Result;
 }
 
-int RedisClient::srem(const string& key, const vector<string>& members, void *data)
+StringResult RedisClient::SPop(const string& Key)
 {
-	if (key.empty())
+	StringResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call srem %s key \n", key.c_str());
-	vector<string> cmd;
-	cmd.push_back("srem");
-	cmd.push_back(key);
-	vector<string>::const_iterator it = members.begin();
-	for (; it != members.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_integer_relpy, data, cmd);
+	_cmd.Command(RT_STRING, Result, &Result.val, "spop %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::sunion(const vector<string>& keys, void *data)
+StringArrayResult RedisClient::SPopN(const string& Key, int64_t Count)
 {
-	if (keys.empty())
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call sunion \n");
-	vector<string> cmd;
-	cmd.push_back("sunion");
-	vector<string>::const_iterator it = keys.begin();
-	for (; it != keys.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_slist_relpy, data, cmd);
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "spop %s %lld", Key.c_str(), Count);
+	return Result;
 }
 
-int RedisClient::sunionstore(const string& dst, const vector<string>& keys, void *data)
+StringResult RedisClient::SRandMember(const string& Key)
 {
-	if (dst.empty() || keys.empty())
+	StringResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call sunionstore \n");
-	vector<string> cmd;
-	cmd.push_back("sunionstore");
-	cmd.push_back(dst);
-	vector<string>::const_iterator it = keys.begin();
-	for (; it != keys.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_integer_relpy, data, cmd);
+	_cmd.Command(RT_STRING, Result, &Result.val, "srandmember %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::zadd(const string& key, const vector<pair<float, string> >& score_mem, void *data)
+StringArrayResult RedisClient::SRandMemberN(const string& Key, int64_t Count)
 {
-	if (key.empty() || score_mem.empty())
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zadd %s key \n", key.c_str());
-	vector<string> cmd;
-	cmd.push_back("zadd");
-	cmd.push_back(key);
-	vector<pair<float, string> >::const_iterator it = score_mem.begin();
-	for (; it != score_mem.end(); ++it)
-	{
-		cmd.push_back(tostring(it->first));
-		cmd.push_back(it->second);
-	}
-	return m_pcmd->exec_commandargv(em_integer_relpy, data, cmd);
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "srandmember %s %lld", Key.c_str(), Count);
+	return Result;
 }
 
-int RedisClient::zcard(const string& key, void *data)
+IntResult RedisClient::SRem(const string& Key, const vector<string>& Members)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || Members.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zcard %s\n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "zcard %s", key.c_str());
+	vector<string> Cmd;
+	Cmd.push_back("srem");
+	Cmd.push_back(Key);
+	_cmd.vCommand(RT_INTEGER, Cmd, Members, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::zcount(const string& key, const string& min, const string& max, void *data)
+StringArrayResult RedisClient::SUnion(const vector<string>& Keys)
 {
-	if (key.empty() || min.empty() || max.empty())
+	StringArrayResult Result;
+	if (Keys.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zcount %s\n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "zcount %s %s %s", key.c_str(), min.c_str(), max.c_str());
+	_cmd.vCommand(RT_STRING_ARRAY, "sunion", Keys, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::zincrby(const string& key, const double incr, const string& member, void *data)
+IntResult RedisClient::SUnionStore(const string& Dst, const vector<string>& Keys)
 {
-	if (key.empty() || member.empty())
+	IntResult Result;
+	if (Dst.empty() || Keys.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zincrby %s\n", key.c_str());
-	return m_pcmd->exec_command(em_double_relpy, data, "zincrby %s %f %s", key.c_str(), incr, member.c_str());
+	vector<string> Cmd;
+	Cmd.push_back("sunionstore");
+	Cmd.push_back(Dst);
+	_cmd.vCommand(RT_INTEGER, Cmd, Keys, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::zrange(const string& key, int start, int end, void *data, bool withscores /*= false*/)
+IntResult RedisClient::ZAdd(const string& Key, const vector<pair<float, string> >& ScoreMem)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || ScoreMem.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zrange %s\n", key.c_str());
-	if (withscores)
-	{
-		// to do sd_map_reply
-		return m_pcmd->exec_command(em_sd_map_reply, data, "zrange %s %d %d %s", key.c_str(), start, end, "withscores");
-	}
-	return m_pcmd->exec_command(em_slist_relpy, data, "zrange %s %d %d", key.c_str(), start, end);
+	vector<string> Cmd;
+	Cmd.push_back("zadd");
+	Cmd.push_back(Key);
+	_cmd.vCommand(RT_INTEGER, Cmd, ScoreMem, Result, &Result.val);
+	return Result;
 }
 
-
-int RedisClient::zrangebyscore(const string& key, const string& min, const string& max, void *data, bool withscores /*= false*/)
+IntResult RedisClient::ZAddNX(const string& Key, const vector<pair<float, string> >& ScoreMem)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || ScoreMem.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zrangebyscore %s\n", key.c_str());
-	if (withscores)
-	{
-		// to do sd_map_reply
-		return m_pcmd->exec_command(em_sd_map_reply, data, "zrangebyscore %s %s %s %s", key.c_str(), min.c_str(), max.c_str(), "withscores");
-	}
-	return m_pcmd->exec_command(em_slist_relpy, data, "zrangebyscore %s %s %s", key.c_str(), min.c_str(), max.c_str());
+	vector<string> Cmd;
+	Cmd.push_back("zadd");
+	Cmd.push_back(Key);
+	Cmd.push_back("NX");
+	_cmd.vCommand(RT_INTEGER, Cmd, ScoreMem, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::zrangebyscore(const string& key, const string& min, const string& max, int offset, int count, void *data, bool withscores /*= false*/)
+IntResult RedisClient::ZAddXX(const string& Key, const vector<pair<float, string> >& ScoreMem)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || ScoreMem.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zrangebyscore with limit %s\n", key.c_str());
-	if (withscores)
-	{
-		// to do sd_map_reply
-		return m_pcmd->exec_command(em_sd_map_reply, data, "zrangebyscore %s %s %s %s limit %d %d", key.c_str(), min.c_str(), max.c_str(), "withscores", offset, count);
-	}
-	return m_pcmd->exec_command(em_slist_relpy, data, "zrangebyscore %s %s %s limit %d %d", key.c_str(), min.c_str(), max.c_str(), offset, count);
+	vector<string> Cmd;
+	Cmd.push_back("zadd");
+	Cmd.push_back(Key);
+	Cmd.push_back("XX");
+	_cmd.vCommand(RT_INTEGER, Cmd, ScoreMem, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::zrank(const string& key, const string& member, void *data)
+IntResult RedisClient::ZAddCh(const string& Key, const vector<pair<float, string> >& ScoreMem)
 {
-	if (key.empty() || member.empty())
+	IntResult Result;
+	if (Key.empty() || ScoreMem.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zrank %s\n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "zrank %s %s", key.c_str(), member.c_str());
+	vector<string> Cmd;
+	Cmd.push_back("zadd");
+	Cmd.push_back(Key);
+	Cmd.push_back("CH");
+	_cmd.vCommand(RT_INTEGER, Cmd, ScoreMem, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::zrem(const string& key, const vector<string>& members, void *data)
+IntResult RedisClient::ZAddNXCh(const string& Key, const vector<pair<float, string> >& ScoreMem)
 {
-	if (key.empty() || members.empty())
+	IntResult Result;
+	if (Key.empty() || ScoreMem.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zrem %s key\n", key.c_str());
-	vector<string> cmd;
-	cmd.push_back("zrem");
-	cmd.push_back(key);
-	vector<string>::const_iterator it = members.begin();
-	for (; it != members.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_integer_relpy, data, cmd);
+	vector<string> Cmd;
+	Cmd.push_back("zadd");
+	Cmd.push_back(Key);
+	Cmd.push_back("NX");
+	Cmd.push_back("CH");
+	_cmd.vCommand(RT_INTEGER, Cmd, ScoreMem, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::zremrangebyrank(const string& key, int start, int stop, void *data)
+IntResult RedisClient::ZAddXXCh(const string& Key, const vector<pair<float, string> >& ScoreMem)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || ScoreMem.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zremrangebyrank %s\n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "zremrangebyrank %s %d %d", key.c_str(), start, stop);
+	vector<string> Cmd;
+	Cmd.push_back("zadd");
+	Cmd.push_back(Key);
+	Cmd.push_back("XX");
+	Cmd.push_back("CH");
+	_cmd.vCommand(RT_INTEGER, Cmd, ScoreMem, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::zremrangebyscore(const string& key, const string& min, const string& max, void *data)
+IntResult RedisClient::ZCard(const string& Key)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zremrangebyscore %s\n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "zremrangebyscore %s %s %s", key.c_str(), min.c_str(), max.c_str());
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "zcard %s", Key.c_str());
+	return Result;
 }
 
-int RedisClient::zrevrange(const string& key, int start, int stop, void *data, bool withscores /*= false*/)
+IntResult RedisClient::ZCount(const string& Key, const string& Min, const string& Max)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || Min.empty() || Max.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zrevrange %s\n", key.c_str());
-	if (withscores)
-	{
-		// to do sd_map_reply
-		return m_pcmd->exec_command(em_sd_map_reply, data, "zrevrange %s %d %d %s", key.c_str(), start, stop, "withscores");
-	}
-	return m_pcmd->exec_command(em_slist_relpy, data, "zrevrange %s %d %d", key.c_str(), start, stop);
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "zcount %s %s %s", Key.c_str(), Min.c_str(), Max.c_str());
+	return Result;
 }
 
-int RedisClient::zrevrangebyscore(const string& key, const string& min, const string& max, void *data, bool withscores /*= false*/)
+FloatResult RedisClient::ZincrBy(const string& Key, const float Incr, const string& Member)
 {
-	if (key.empty())
+	FloatResult Result;
+	if (Key.empty() || Member.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zrevrangebyscore %s\n", key.c_str());
-	if (withscores)
-	{
-		// to do sd_map_reply
-		return m_pcmd->exec_command(em_sd_map_reply, data, "zrevrangebyscore %s %s %s %s", key.c_str(), min.c_str(), max.c_str(), "withscores");
-	}
-	return m_pcmd->exec_command(em_slist_relpy, data, "zrevrangebyscore %s %s %s", key.c_str(), min.c_str(), max.c_str());
+	_cmd.Command(RT_FLOAT, Result, &Result.val, "zincrby %s %f %s", Key.c_str(), Incr, Member.c_str());
+	return Result;
 }
 
-int RedisClient::zrevrangebyscore(const string& key, const string& min, const string& max, int offset, int count, void *data, bool withscores /*= false*/)
+IntResult RedisClient::ZlexCount(const string& Key, const string& Min, const string& Max)
 {
-	if (key.empty())
+	IntResult Result;
+	if (Key.empty() || Min.empty() || Max.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zrevrangebyscore with limit %s\n", key.c_str());
-	if (withscores)
-	{
-		// to do sd_map_reply
-		return m_pcmd->exec_command(em_sd_map_reply, data, "zrevrangebyscore %s %s %s %s limit %d %d", key.c_str(), min.c_str(), max.c_str(), "withscores", offset, count);
-	}
-	return m_pcmd->exec_command(em_slist_relpy, data, "zrevrangebyscore %s %s %s limit %d %d", key.c_str(), min.c_str(), max.c_str(), offset, count);
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "zlexcount %s %s %s", Key.c_str(), Min.c_str(), Max.c_str());
+	return Result;
 }
 
-int RedisClient::zrevrank(const string& key, const string& member, void *data)
+StringArrayResult RedisClient::ZRange(const string& Key, int64_t Start, int64_t End)
 {
-	if (key.empty() || member.empty())
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zrevrank %s\n", key.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "zrevrank %s %s", key.c_str(), member.c_str());
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "zrange %s %lld %lld", Key.c_str(), Start, End);
+	return Result;
 }
 
-int RedisClient::zscore(const string& key, const string& member, void *data)
+StringFloatMapResult RedisClient::ZRangeWithScores(const string& Key, int64_t Start, int64_t End)
 {
-	if (key.empty() || member.empty())
+	StringFloatMapResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call zscore %s\n", key.c_str());
-	return m_pcmd->exec_command(em_double_relpy, data, "zscore %s %s", key.c_str(), member.c_str());
+	_cmd.Command(RT_STRING_FLOAT_MAP, Result, &Result.val, "zrange %s %lld %lld withscores", Key.c_str(), Start, End);
+	return Result;
 }
 
-int RedisClient::publish(const string& channel, const string& message, void *data)
+StringArrayResult RedisClient::ZRangeByLex(const string& Key, const string& Min, const string& Max)
 {
-	if (channel.empty() || message.empty())
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call publish %s %s\n", channel.c_str(), message.c_str());
-	return m_pcmd->exec_command(em_integer_relpy, data, "publish %s %b", channel.c_str(), message.c_str(), message.size());
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "zrangebylex %s %s %s", Key.c_str(), Min.c_str(), Max.c_str());
+	return Result;
 }
 
-int RedisClient::psubscribe(const vector<string>& pattern, void *data)
+StringArrayResult RedisClient::ZRangeByLex(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count)
 {
-	if (pattern.empty())
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call psubscribe \n");
-	vector<string> cmd;
-	cmd.push_back("psubscribe");
-	vector<string>::const_iterator it = pattern.begin();
-	for (; it != pattern.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_array_reply, data, cmd);
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "zrangebylex %s %s %s limit %lld %lld", Key.c_str(), Min.c_str(), Max.c_str(), Offset, Count);
+	return Result;
 }
 
-int RedisClient::subscribe(const vector<string>& channels, void *data)
+StringArrayResult RedisClient::ZRangeByScore(const string& Key, const string& Min, const string& Max)
 {
-	if (channels.empty())
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	printf("call subscribe \n");
-	vector<string> cmd;
-	cmd.push_back("subscribe");
-	vector<string>::const_iterator it = channels.begin();
-	for (; it != channels.end(); ++it)
-	{
-		cmd.push_back(*it);
-	}
-	return m_pcmd->exec_commandargv(em_array_reply, data, cmd);
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "zrangebyscore %s %s %s", Key.c_str(), Min.c_str(), Max.c_str());
+	return Result;
 }
 
-int RedisClient::punsubscribe(const vector<string>& pattern, void *data)
+StringArrayResult RedisClient::ZRangeByScore(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count)
 {
-	printf("call punsubscribe \n");
-	vector<string> cmd;
-	cmd.push_back("punsubscribe");
-	vector<string>::const_iterator it = pattern.begin();
-	for (; it != pattern.end(); ++it)
+	StringArrayResult Result;
+	if (Key.empty())
 	{
-		cmd.push_back(*it);
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	return m_pcmd->exec_commandargv(em_array_reply, data, cmd);
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "zrangebyscore %s %s %s limit %lld %lld", Key.c_str(), Min.c_str(), Max.c_str(), Offset, Count);
+	return Result;
 }
 
-int RedisClient::unsubscribe(const vector<string>& pattern, void *data)
+StringFloatMapResult RedisClient::ZRangeByScoreWithScores(const string& Key, const string& Min, const string& Max)
 {
-	printf("call unsubscribe \n");
-	vector<string> cmd;
-	cmd.push_back("unsubscribe");
-	vector<string>::const_iterator it = pattern.begin();
-	for (; it != pattern.end(); ++it)
+	StringFloatMapResult Result;
+	if (Key.empty())
 	{
-		cmd.push_back(*it);
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	return m_pcmd->exec_commandargv(em_array_reply, data, cmd);
+	_cmd.Command(RT_STRING_FLOAT_MAP, Result, &Result.val, "zrangebyscore %s %s %s withscores", Key.c_str(), Min.c_str(), Max.c_str());
+	return Result;
 }
 
-int RedisClient::pubsub_channels(const string& channel, void *data)
+StringFloatMapResult RedisClient::ZRangeByScoreWithScores(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count)
 {
-	printf("call pubsub_channels %s\n", channel.c_str());
-	if (channel.empty())
+	StringFloatMapResult Result;
+	if (Key.empty())
 	{
-		return m_pcmd->exec_command(em_slist_relpy, data, "pubsub channels");
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	return m_pcmd->exec_command(em_slist_relpy, data, "pubsub channels %s", channel.c_str());
+	_cmd.Command(RT_STRING_FLOAT_MAP, Result, &Result.val, "zrangebyscore %s %s %s withscores limit %lld %lld", Key.c_str(), Min.c_str(), Max.c_str(), Offset, Count);
+	return Result;
 }
 
-int RedisClient::pubsub_numsub(const vector<string>& channels, void *data)
+IntResult RedisClient::ZRank(const string& Key, const string& Member)
 {
-	printf("call pubsub_numsub\n");
-	vector<string> cmd;
-	cmd.push_back("pubsub");
-	cmd.push_back("numsub");
-	vector<string>::const_iterator it = channels.begin();
-	for (; it != channels.end(); ++it)
+	IntResult Result;
+	if (Key.empty() || Member.empty())
 	{
-		cmd.push_back(*it);
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	return m_pcmd->exec_commandargv(em_array_reply, data, cmd);
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "zrank %s %s", Key.c_str(), Member.c_str());
+	return Result;
 }
 
-int RedisClient::pubsub_numpat(void *data)
+IntResult RedisClient::ZRem(const string& Key, const vector<string>& Members)
 {
-	printf("call pubsub_numpat \n");
-	return m_pcmd->exec_command(em_integer_relpy, data, "pubsub numpat");
+	IntResult Result;
+	if (Key.empty() || Members.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	vector<string> Cmd;
+	Cmd.push_back("zrem");
+	Cmd.push_back(Key);
+	_cmd.vCommand(RT_INTEGER, Cmd, Members, Result, &Result.val);
+	return Result;
 }
 
-int RedisClient::raw_redis_cmd(reply_type type, void *data, const char* cmd, ...)
+IntResult RedisClient::ZRemRangeByLex(const string& Key, const string& Min, const string& Max)
 {
-	redisCallbackFn *fn = m_pcmd->get_callback(type);
-	if (!fn)
+	IntResult Result;
+	if (Key.empty())
 	{
-		printf("unknow reply type %d\n", type);
-		return -1;
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
 	}
-	connection *pconn = m_pcmd->get_conn();
-	if (!pconn)
-	{
-		printf("get connection failed \n");
-		return -1;
-	}
-	if (!pconn->valid_conn()) //连接无效
-	{
-		printf("connection invalid \n");
-		pconn->try_connect();
-		return -1;
-	}
-	redisAsyncContext* ac = pconn->get_redis_cx();
-	va_list ap;
-	int status;
-	va_start(ap, cmd);
-	status = redisvAsyncCommand(ac, fn, data, cmd, ap);
-	va_end(ap);
-	return status;
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "zremrangebylex %s %s %s", Key.c_str(), Min.c_str(), Max.c_str());
+	return Result;
 }
 
-int RedisClient::raw_redis_cmdargv(reply_type type, const vector<string> &cmd, void *data)
+IntResult RedisClient::ZRemRangeByRank(const string& Key, int64_t Start, int64_t End)
 {
-	return m_pcmd->exec_commandargv(type, data, cmd);
+	IntResult Result;
+	if (Key.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "zremrangebyrank %s %lld %lld", Key.c_str(), Start, End);
+	return Result;
 }
-#endif
+
+IntResult RedisClient::ZRemRangeByScore(const string& Key, const string& Min, const string& Max)
+{
+	IntResult Result;
+	if (Key.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "zremrangebyscore %s %s %s", Key.c_str(), Min.c_str(), Max.c_str());
+	return Result;
+}
+
+StringArrayResult RedisClient::ZRevRange(const string& Key, int64_t Start, int64_t End)
+{
+	StringArrayResult Result;
+	if (Key.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "zrevrange %s %lld %lld", Key.c_str(), Start, End);
+	return Result;
+}
+
+StringFloatMapResult RedisClient::ZRevRangeWithScores(const string& Key, int64_t Start, int64_t End)
+{
+	StringFloatMapResult Result;
+	if (Key.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_STRING_FLOAT_MAP, Result, &Result.val, "zrevrange %s %lld %lld withscores", Key.c_str(), Start, End);
+	return Result;
+}
+
+StringArrayResult RedisClient::ZRevRangeByLex(const string& Key, const string& Min, const string& Max)
+{
+	StringArrayResult Result;
+	if (Key.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "zrevrangebylex %s %s %s", Key.c_str(), Min.c_str(), Max.c_str());
+	return Result;
+}
+
+StringArrayResult RedisClient::ZRevRangeByLex(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count)
+{
+	StringArrayResult Result;
+	if (Key.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "zrevrangebylex %s %s %s limit %lld %lld", Key.c_str(), Min.c_str(), Max.c_str(), Offset, Count);
+	return Result;
+}
+
+StringArrayResult RedisClient::ZRevRangeByScore(const string& Key, const string& Min, const string& Max)
+{
+	StringArrayResult Result;
+	if (Key.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "zrevrangebyscore %s %s %s", Key.c_str(), Min.c_str(), Max.c_str());
+	return Result;
+}
+
+StringArrayResult RedisClient::ZRevRangeByScore(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count)
+{
+	StringArrayResult Result;
+	if (Key.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_STRING_ARRAY, Result, &Result.val, "zrevrangebyscore %s %s %s limit %lld %lld", Key.c_str(), Min.c_str(), Max.c_str(), Offset, Count);
+	return Result;
+}
+
+StringFloatMapResult RedisClient::ZRevRangeByScoreWithScores(const string& Key, const string& Min, const string& Max)
+{
+	StringFloatMapResult Result;
+	if (Key.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_STRING_FLOAT_MAP, Result, &Result.val, "zrevrangebyscore %s %s %s withscores", Key.c_str(), Min.c_str(), Max.c_str());
+	return Result;
+}
+
+StringFloatMapResult RedisClient::ZRevRangeByScoreWithScores(const string& Key, const string& Min, const string& Max, int64_t Offset, int64_t Count)
+{
+	StringFloatMapResult Result;
+	if (Key.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_STRING_FLOAT_MAP, Result, &Result.val, "zrevrangebyscore %s %s %s withscores limit %lld %lld", Key.c_str(), Min.c_str(), Max.c_str(), Offset, Count);
+	return Result;
+}
+
+IntResult RedisClient::ZRevRank(const string& Key, const string& Member)
+{
+	IntResult Result;
+	if (Key.empty() || Member.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_INTEGER, Result, &Result.val, "zrevrank %s %s", Key.c_str(), Member.c_str());
+	return Result;
+}
+
+FloatResult RedisClient::Zscore(const string& Key, const string& Member)
+{
+	FloatResult Result;
+	if (Key.empty() || Member.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	_cmd.Command(RT_FLOAT, Result, &Result.val, "zscore %s %s", Key.c_str(), Member.c_str());
+	return Result;
+}
+
+IntResult RedisClient::ZunionStore(const string& Dst, vector<string>& Keys, const string &Aggregate /*= "SUM"*/)
+{
+	IntResult Result;
+	if (Dst.empty() || Keys.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	vector<string> Cmd;
+	Cmd.push_back("zunionstore");
+	Cmd.push_back(Dst);
+	Cmd.push_back(ToString(Keys.size()));
+	Keys.push_back(Aggregate);
+	_cmd.vCommand(RT_INTEGER, Cmd, Keys, Result, &Result.val);
+	return Result;
+}
+
+IntResult RedisClient::ZunionStoreWeights(const string& Dst, vector<string>& Keys, const vector<float>& Weights, const string &Aggregate /*= "SUM"*/)
+{
+	IntResult Result;
+	if (Dst.empty() || Keys.empty())
+	{
+		Result.Set(CMD_OPERATE_FAILED, "Keys is empty");
+		return Result;
+	}
+	vector<string> Cmd;
+	Cmd.push_back("zunionstore");
+	Cmd.push_back(Dst);
+	Cmd.push_back(ToString(Keys.size()));
+	for (auto i : Weights)
+	{
+		Keys.push_back(ToString(i));
+	}
+	Keys.push_back(Aggregate);
+	_cmd.vCommand(RT_INTEGER, Cmd, Keys, Result, &Result.val);
+	return Result;
+}
+
+redisReply* RedisClient::RawCommand(const char* Cmd, ...)
+{
+	redisContext* Ctx = nullptr;
+	redisReply *reply = nullptr;
+	// to do maxretry
+	for (int i = 0; i<2; i++)
+	{
+		RedisCtxGuard CtxGuard(&_cmd.GetConnPool());
+		Ctx = CtxGuard.GetCtx();
+		if (nullptr == Ctx)
+		{
+			continue;
+		}
+		if (nullptr != reply)
+		{
+			freeReplyObject((void*)reply);
+			reply = nullptr;
+		}
+		va_list args;
+		va_start(args, Cmd);
+		reply = static_cast<redisReply *>(redisvCommand(Ctx, Cmd, args));
+		va_end(args);
+		if (reply)
+		{
+			break;
+		}
+		else
+		{
+			CtxGuard.GetConn()->SetStatus(CS_UNCONNECTED);
+		}
+	}
+	return reply;
+}
+
+redisReply* RedisClient::RawCommandv(const vector<string> &Cmd)
+{
+	vector<const char *> argv(Cmd.size());
+	vector<size_t> argvlen(Cmd.size());
+	unsigned int j = 0;
+	for (vector<string>::const_iterator it = Cmd.begin(); it != Cmd.end(); ++it, ++j)
+	{
+		argv[j] = it->c_str();
+		argvlen[j] = it->size();
+	}
+	redisContext* Ctx = nullptr;
+	redisReply *reply = nullptr;
+	// to do maxretry
+	for (int i = 0; i<2; i++)
+	{
+		RedisCtxGuard CtxGuard(&_cmd.GetConnPool());
+		Ctx = CtxGuard.GetCtx();
+		if (nullptr == Ctx)
+		{
+			continue;
+		}
+		if (nullptr != reply)
+		{
+			freeReplyObject((void*)reply);
+			reply = nullptr;
+		}
+		reply = static_cast<redisReply *>(redisCommandArgv(Ctx, argv.size(), &(argv[0]), &(argvlen[0])));
+		if (Ctx && Ctx->err == 1) //超时重试
+		{
+			printf("come here\n");
+			CtxGuard.GetConn()->SetStatus(CS_UNCONNECTED);
+			continue;
+		}
+		if (reply)
+		{
+			break;
+		}
+		else
+		{
+			CtxGuard.GetConn()->SetStatus(CS_UNCONNECTED);
+		}
+	}
+	return reply;
+}

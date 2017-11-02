@@ -1,5 +1,7 @@
 #include "RedisConnPool.h"
 #include <vector>
+#include <sstream>
+#include <map>
 #pragma once
 
 using namespace std;
@@ -16,9 +18,9 @@ enum ReplyType
 	RT_FLOAT = 6,
 	RT_STRING = 7,
 	RT_STRING_ARRAY = 8,
-	RT_DOUBLE_ARRAY = 9,
+	RT_FLOAT_ARRAY = 9,
 	RT_STRING_STRING_MAP = 10,
-	RT_STRING_DOUBLE_MAP = 11,
+	RT_STRING_FLOAT_MAP = 11,
 	RT_RAW = 12,
 	RT_END=9999
 };
@@ -92,6 +94,20 @@ struct StringStringMapResult :public BaseResult
 	map<string,string> val;
 };
 
+struct StringFloatMapResult :public BaseResult
+{
+	const map<string, float> &GetVal()const { return val; }
+	map<string, float> val;
+};
+
+
+template<class T>
+std::string ToString(const T &t)
+{
+	ostringstream oss;
+	oss << t;
+	return oss.str();
+}
 
 class RedisCtxGuard
 {
@@ -114,9 +130,15 @@ public:
 	~RedisCmd();
 
 	void Command(ReplyType Type, BaseResult &Result,void *Val, const char* Cmd, ...);
-	void vCommand(ReplyType Type, const string &Command, const std::vector<std::string> &V, BaseResult &Result, void *Val);
+	void vCommand(ReplyType Type, const string &Command, const vector<string> &V, BaseResult &Result, void *Val);
+	void vCommand(ReplyType Type, const vector<string> &Commands, const vector<string> &V, BaseResult &Result, void *Val);
+	void vCommand(ReplyType Type, const string &Command, const vector<pair<string, string> >&V, BaseResult &Result, void *Val);
+	void vCommand(ReplyType Type, const vector<string> &Commands, const vector<pair<string, string> >&V, BaseResult &Result, void *Val);
+	void vCommand(ReplyType Type, const vector<string> &Commands, const vector<pair<float, string> >&V, BaseResult &Result, void *Val);
 	redisReply *Command(const char* cmd, ...);
+	RedisConnPool &GetConnPool(){ return _conn_pool; }
 private:
+	void DovCommand(ReplyType Type, vector<const char *> &Argv, const vector<size_t> &Argvlen, BaseResult &Result, void *Val);
 	bool CheckReply(const redisReply *Reply, BaseResult &Result);
 	void FormatReply(ReplyType Type, redisReply *Reply, BaseResult &Result, void *Val);
 private:
