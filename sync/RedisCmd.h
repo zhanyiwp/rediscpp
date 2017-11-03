@@ -2,6 +2,7 @@
 #include <vector>
 #include <sstream>
 #include <map>
+#include <mutex>
 #pragma once
 
 using namespace std;
@@ -33,6 +34,20 @@ enum CMDRESULT
 	CMD_REPLY_NOT_OK=3
 };
 
+struct RedisReply
+{
+	explicit RedisReply(redisReply * Reply) :_reply(Reply){}
+	~RedisReply()
+	{
+		if (nullptr !=_reply)
+		{
+			freeReplyObject((void*)_reply);
+			_reply = nullptr;
+		}
+	}
+private:
+	redisReply *_reply;
+};
 struct BaseResult
 {
 	BaseResult()
@@ -55,12 +70,14 @@ private:
 struct BoolResult :public BaseResult
 {
 	bool TRUE(){}
+	const bool &GetVal()const { return val; }
 	bool val;
 };
 
 struct StatusResult :public BaseResult
 {
 	bool OK(){}
+	const string &GetVal()const { return val; }
 	string val;
 };
 
@@ -100,6 +117,11 @@ struct StringFloatMapResult :public BaseResult
 	map<string, float> val;
 };
 
+struct RawResult:public BaseResult
+{
+	shared_ptr<RedisReply> GetVal()const { return val; }
+	shared_ptr<RedisReply> val;
+};
 
 template<class T>
 std::string ToString(const T &t)
@@ -126,21 +148,52 @@ private:
 class RedisCmd
 {
 public:
-	RedisCmd(RedisOpt &Opt);
+	RedisCmd();
 	~RedisCmd();
 
-	void Command(ReplyType Type, BaseResult &Result,void *Val, const char* Cmd, ...);
+	virtual void Command(ReplyType Type, BaseResult &Result,void *Val, const char* Cmd, ...) = 0;
 	void vCommand(ReplyType Type, const string &Command, const vector<string> &V, BaseResult &Result, void *Val);
 	void vCommand(ReplyType Type, const vector<string> &Commands, const vector<string> &V, BaseResult &Result, void *Val);
 	void vCommand(ReplyType Type, const string &Command, const vector<pair<string, string> >&V, BaseResult &Result, void *Val);
 	void vCommand(ReplyType Type, const vector<string> &Commands, const vector<pair<string, string> >&V, BaseResult &Result, void *Val);
 	void vCommand(ReplyType Type, const vector<string> &Commands, const vector<pair<float, string> >&V, BaseResult &Result, void *Val);
 	redisReply *Command(const char* cmd, ...);
+protected:
+	virtual void DovCommand(ReplyType Type, vector<const char *> &Argv, const vector<size_t> &Argvlen, BaseResult &Result, void *Val) = 0;
+	bool CheckReply(const redisReply *Reply, BaseResult &Result);
+	void FormatReply(ReplyType Type, redisReply *Reply, BaseResult &Result, void *Val);
+};
+
+class RedisNormalCmd :public RedisCmd
+{
+	friend class IRedisClient;
+public:
+	RedisNormalCmd(RedisOpt &Opt);
+	~RedisNormalCmd();
+	void Command(ReplyType Type, BaseResult &Result, void *Val, const char* Cmd, ...);
 	RedisConnPool &GetConnPool(){ return _conn_pool; }
 private:
 	void DovCommand(ReplyType Type, vector<const char *> &Argv, const vector<size_t> &Argvlen, BaseResult &Result, void *Val);
-	bool CheckReply(const redisReply *Reply, BaseResult &Result);
-	void FormatReply(ReplyType Type, redisReply *Reply, BaseResult &Result, void *Val);
 private:
 	RedisConnPool _conn_pool;
+};
+
+class RedisPipelineCmd :public RedisCmd
+{
+public:
+	RedisPipelineCmd(RedisConnPool *ConnPool);
+	~RedisPipelineCmd();
+	void Begin();
+	void Command(ReplyType Type, BaseResult &Result, void *Val, const char* Cmd, ...);
+	int Exec();
+private:
+	void DovCommand(ReplyType Type, vector<const char *> &Argv, const vector<size_t> &Argvlen, BaseResult &Result, void *Val);
+private:
+	RedisConnPool* _conn_pool;
+	shared_ptr<RedisConn> _conn;
+	redisContext* _ctx;
+	std::mutex	_mutex;
+	map<int,tuple<ReplyType, BaseResult*,void *>> _reply;
+	vector<tuple<ReplyType, BaseResult*,void *>> _success_reply;
+	int index;
 };
