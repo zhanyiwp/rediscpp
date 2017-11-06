@@ -271,6 +271,8 @@ void RedisCmd::FormatReply(ReplyType Type, redisReply *Reply, BaseResult &Result
 	{
 		case RT_STATUS:
 		{
+			static_cast<string *>(Val)->assign(Reply->str, Reply->len);
+			Result.Set(CMD_SUCCESS, "");
 			break;
 		}
 		case RT_TYPE:
@@ -279,6 +281,8 @@ void RedisCmd::FormatReply(ReplyType Type, redisReply *Reply, BaseResult &Result
 		}
 		case RT_BOOL:
 		{
+			*(static_cast<bool *>(Val)) = ((Reply->integer == 1) ? true : false);
+			Result.Set(CMD_SUCCESS, "");
 			break;
 		}
 		case RT_INTEGER:
@@ -293,6 +297,9 @@ void RedisCmd::FormatReply(ReplyType Type, redisReply *Reply, BaseResult &Result
 		}
 		case RT_FLOAT:
 		{
+			string s(Reply->str, Reply->len);
+			*static_cast<float *>(Val)= atof(s.c_str());
+			Result.Set(CMD_SUCCESS, "");
 			break;
 		}
 		case RT_STRING:
@@ -318,7 +325,7 @@ void RedisCmd::FormatReply(ReplyType Type, redisReply *Reply, BaseResult &Result
 		case RT_STRING_STRING_MAP:
 		{
 			std::map<std::string, std::string> *p = static_cast<std::map<std::string, std::string> *>(Val);
-			for (size_t i = 0; i<Reply->elements - 1; i = i + 2)
+			for (size_t i = 0; Reply->elements > 0 && i < Reply->elements - 1; i = i + 2)
 			{
 				p->insert(std::make_pair(string(Reply->element[i]->str, Reply->element[i]->len), string(Reply->element[i + 1]->str, Reply->element[i + 1]->len)));
 			}
@@ -327,6 +334,14 @@ void RedisCmd::FormatReply(ReplyType Type, redisReply *Reply, BaseResult &Result
 		}
 		case RT_STRING_FLOAT_MAP:
 		{
+			std::map<std::string, float> *p = static_cast<std::map<std::string, float> *>(Val);
+			for (size_t i = 0; Reply->elements > 0 && i< Reply->elements - 1; i = i + 2)
+			{
+				string s(Reply->element[i + 1]->str, Reply->element[i + 1]->len);
+				float f = atof(s.c_str());
+				p->insert(std::make_pair(string(Reply->element[i]->str, Reply->element[i]->len), f));
+			}
+			Result.Set(CMD_SUCCESS, "");
 			break;
 		}
 			
@@ -368,7 +383,6 @@ bool RedisCmd::CheckReply(const redisReply *reply, BaseResult &Result)
 		case REDIS_REPLY_STATUS:
 		{
 			return true;
-			//return (strcasecmp(reply->str, "OK") == 0) ? true : false;
 		}
 		case REDIS_REPLY_ERROR:
 		{

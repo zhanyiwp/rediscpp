@@ -62,21 +62,21 @@ struct BaseResult
 	}
 	bool Success(){ return (CMD_SUCCESS == Ret) ? true : false; }
 	const string &GetErr()const{ return ErrInfo; }
-private:
+protected:
 	CMDRESULT Ret;
 	string ErrInfo;
 };
 
 struct BoolResult :public BaseResult
 {
-	bool TRUE(){}
+	bool TRUE(){ return (CMD_SUCCESS == Ret && val) ? true : false; }
 	const bool &GetVal()const { return val; }
 	bool val;
 };
 
 struct StatusResult :public BaseResult
 {
-	bool OK(){}
+	bool OK(){ return (CMD_SUCCESS == Ret && val == "OK") ? true : false; }
 	const string &GetVal()const { return val; }
 	string val;
 };
