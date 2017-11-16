@@ -20,9 +20,10 @@ enum ReplyType
 	RT_STRING = 7,
 	RT_STRING_ARRAY = 8,
 	RT_FLOAT_ARRAY = 9,
-	RT_STRING_STRING_MAP = 10,
-	RT_STRING_FLOAT_MAP = 11,
-	RT_RAW = 12,
+	RT_BOOL_ARRAY=10,
+	RT_STRING_STRING_MAP = 11,
+	RT_STRING_FLOAT_MAP = 12,
+	RT_RAW = 13,
 	RT_END=9999
 };
 
@@ -45,6 +46,7 @@ struct RedisReply
 			_reply = nullptr;
 		}
 	}
+	redisReply * GetReply()const{ return _reply; }
 private:
 	redisReply *_reply;
 };
@@ -97,6 +99,12 @@ struct StringArrayResult :public BaseResult
 {
 	const vector<string> &GetVal()const { return val; }
 	vector<string> val;
+};
+
+struct BoolArrayResult :public BaseResult
+{
+	const vector<bool> &GetVal()const { return val; }
+	vector<bool> val;
 };
 
 struct FloatResult :public BaseResult
