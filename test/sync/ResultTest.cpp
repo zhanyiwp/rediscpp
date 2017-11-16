@@ -157,13 +157,12 @@ int main()
 	// pipeline test
 	RedisPipeClient Pipe(&Client);
 	vector<string>Keys;
-	Keys.push_back("mget");
 	Keys.push_back("zhanyitest");
 	Keys.push_back("zhanyitest11");
 	Keys.push_back("zhanyitest22");
 	Keys.push_back("zhanyitest33");
 	vector<shared_ptr<StringResult> > Results(Keys.size());
-	Pipe.Begin();
+	//Pipe.Begin();
 	for (size_t i = 0; i != Keys.size(); i++)
 	{
 		Results[i] = Pipe.Get(Keys[i]);

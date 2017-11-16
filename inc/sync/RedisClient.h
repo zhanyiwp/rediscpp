@@ -422,7 +422,7 @@ public:
 	/***********************server cmd *****************************/
 
 	/***********************raw redis cmd *****************************/
-	//Ö±½ÓÖ´ĞĞredisÃüÁî µ±ÉÏÊö·â×°µÄÃüÁî²»ÄÜÂú×ãÒªÇóÊ± ¿ÉÒÔÊ¹ÓÃÕâĞ©½Ó¿ÚÖ´ĞĞÌØ¶¨redisÃüÁî,Ò»°ã²»Ê¹ÓÃ
+	//ç›´æ¥æ‰§è¡Œrediså‘½ä»¤ å½“ä¸Šè¿°å°è£…çš„å‘½ä»¤ä¸èƒ½æ»¡è¶³è¦æ±‚æ—¶ å¯ä»¥ä½¿ç”¨è¿™äº›æ¥å£æ‰§è¡Œç‰¹å®šrediså‘½ä»¤,ä¸€èˆ¬ä¸ä½¿ç”¨
 	shared_ptr<RawResult> RawCommand(const char* cmd, ...);
 	shared_ptr<RawResult> RawCommandv(const vector<string> &Cmd);
 
@@ -439,12 +439,14 @@ public:
 	~RedisClient();
 };
 
+
+// ä¸æ˜¯å¤šçº¿ç¨‹å®‰å…¨
 class RedisPipeClient :public IRedisClient
 {
 public:
 	explicit RedisPipeClient(RedisClient *Client);
 	~RedisPipeClient();
-	void Begin();
+	//void Begin();
 	int Exec();
 };
 

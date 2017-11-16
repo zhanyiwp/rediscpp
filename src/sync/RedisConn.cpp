@@ -17,7 +17,8 @@ RedisOpt::RedisOpt(string Host, unsigned int Port, string Password, unsigned int
 }
 
 RedisConn::RedisConn(RedisOpt &Opt)
-:_host(Opt._host)
+:_ctx(NULL)
+,_host(Opt._host)
 , _port(Opt._port)
 , _password(Opt._password)
 , _status(CS_UNCONNECTED)
@@ -29,7 +30,7 @@ RedisConn::RedisConn(RedisOpt &Opt)
 
 RedisConn::~RedisConn()
 {
-
+	FreeCtx();
 }
 
 int RedisConn::Connect()
@@ -81,11 +82,12 @@ int RedisConn::Close()
 {
 	FreeCtx();
 	_status = CS_UNCONNECTED;
+	return 0;
 }
 
 
 int RedisConn::Ping()
 {
-	redisReply *Reply = static_cast<redisReply *>(redisCommand(_ctx, "ping"));
+	//redisReply *Reply = static_cast<redisReply *>(redisCommand(_ctx, "ping"));
 	return 0;
 }

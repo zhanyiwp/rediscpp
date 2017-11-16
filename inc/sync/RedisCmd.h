@@ -157,7 +157,7 @@ class RedisCmd
 {
 public:
 	RedisCmd();
-	~RedisCmd();
+	virtual ~RedisCmd();
 
 	virtual void Command(ReplyType Type, BaseResult &Result,void *Val, const char* Cmd, ...) = 0;
 	void vCommand(ReplyType Type, const string &Command, const vector<string> &V, BaseResult &Result, void *Val);
@@ -177,7 +177,7 @@ class RedisNormalCmd :public RedisCmd
 	friend class IRedisClient;
 public:
 	RedisNormalCmd(RedisOpt &Opt);
-	~RedisNormalCmd();
+	virtual ~RedisNormalCmd();
 	void Command(ReplyType Type, BaseResult &Result, void *Val, const char* Cmd, ...);
 	RedisConnPool &GetConnPool(){ return _conn_pool; }
 private:
@@ -190,8 +190,8 @@ class RedisPipelineCmd :public RedisCmd
 {
 public:
 	RedisPipelineCmd(RedisConnPool *ConnPool);
-	~RedisPipelineCmd();
-	void Begin();
+	virtual ~RedisPipelineCmd();
+	void GetCtx();
 	void Command(ReplyType Type, BaseResult &Result, void *Val, const char* Cmd, ...);
 	int Exec();
 private:
@@ -200,7 +200,7 @@ private:
 	RedisConnPool* _conn_pool;
 	shared_ptr<RedisConn> _conn;
 	redisContext* _ctx;
-	std::mutex	_mutex;
+	//std::mutex	_mutex;
 	map<int,tuple<ReplyType, BaseResult*,void *>> _reply;
 	vector<tuple<ReplyType, BaseResult*,void *>> _success_reply;
 	int index;

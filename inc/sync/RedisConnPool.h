@@ -20,6 +20,6 @@ private:
 private:
 	ConnPool		_conn_pool;
 	RedisOpt		_opt;
-	unsigned int	_conn_count;
+	unsigned int		_conn_count;
 	std::mutex		_mutex;
 };

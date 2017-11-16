@@ -37,89 +37,6 @@ RedisCmd::~RedisCmd()
 
 }
 
-/*
-redisReply *RedisCmd::Command(const char* cmd, ...)
-{
-	redisContext* Ctx = nullptr;
-	redisReply *reply = nullptr;
-	// to do maxretry
-	for(int i=0;i<2;i++)
-	{
-		RedisCtxGuard CtxGuard(&_conn_pool);
-		Ctx= CtxGuard.GetCtx();
-		if (nullptr == Ctx)
-		{ 
-			continue;
-		}
-		if (nullptr != reply)
-		{
-			freeReplyObject((void*)reply);
-			reply = nullptr;
-		}
-		va_list args;
-		va_start(args, cmd);
-		reply = static_cast<redisReply *>(redisvCommand(Ctx, cmd, args));
-		va_end(args);
-		if(reply)
-		{	
-			break;
-		}
-		else
-		{
-			CtxGuard.GetConn()->SetStatus(CS_UNCONNECTED);
-		}
-	}
-	return reply;
-}*/
-
-/*void RedisCmd::Command(ReplyType Type, BaseResult &Result, void *Val, const char* Cmd, ...)
-{
-	redisContext* Ctx = nullptr;
-	redisReply *reply = nullptr;
-	// to do maxretry
-	for (int i = 0; i<2; i++)
-	{
-		RedisCtxGuard CtxGuard(&_conn_pool); //必须放在for循环里面，否则连接不会被正确put会pool
-		Ctx = CtxGuard.GetCtx();
-		// GetCtx err
-		if (nullptr == Ctx)
-		{
-			Result.Set(CMD_OPERATE_FAILED, "GetCtx Failed");
-			continue;
-		}
-		if (nullptr != reply)
-		{
-			freeReplyObject((void*)reply);
-			reply = nullptr;
-		}
-		va_list args;
-		va_start(args, Cmd);
-		reply = static_cast<redisReply *>(redisvCommand(Ctx, Cmd, args));
-		va_end(args);
-		if (Ctx && Ctx->err == 1) //超时重试
-		{
-			printf("come here\n");
-			CtxGuard.GetConn()->SetStatus(CS_UNCONNECTED);
-			continue;
-		}
-		if (reply)
-		{
-			break;
-		}
-		else
-		{
-			CtxGuard.GetConn()->SetStatus(CS_UNCONNECTED);
-		}
-	}
-	FormatReply(Type, reply, Result, Val);
-	if (nullptr != reply)
-	{
-		freeReplyObject((void*)reply);
-		reply = nullptr;
-	}
-	return;
-}*/
-
 void RedisCmd::vCommand(ReplyType Type, const string &Command, const vector<string> &V, BaseResult &Result, void *Val)
 {
 	vector<const char *> argv(V.size() + 1);
@@ -214,51 +131,6 @@ void RedisCmd::vCommand(ReplyType Type, const vector<string> &Commands, const ve
 	DovCommand(Type, argv, argvlen, Result, Val);
 	return;
 }
-
-/*
-void RedisCmd::DovCommand(ReplyType Type, vector<const char *> &Argv, const vector<size_t> &Argvlen, BaseResult &Result, void *Val)
-{
-	redisContext* Ctx = nullptr;
-	redisReply *reply = nullptr;
-	// to do maxretry
-	for (int i = 0; i<2; i++)
-	{
-		RedisCtxGuard CtxGuard(&_conn_pool);
-		Ctx = CtxGuard.GetCtx();
-		if (nullptr == Ctx)
-		{
-			Result.Set(CMD_OPERATE_FAILED, "GetCtx Failed");
-			continue;
-		}
-		if (nullptr != reply)
-		{
-			freeReplyObject((void*)reply);
-			reply = nullptr;
-		}
-		reply = static_cast<redisReply *>(redisCommandArgv(Ctx, Argv.size(), &(Argv[0]), &(Argvlen[0])));
-		if (Ctx && Ctx->err == 1) //超时重试
-		{
-			printf("come here\n");
-			CtxGuard.GetConn()->SetStatus(CS_UNCONNECTED);
-			continue;
-		}
-		if (reply)
-		{
-			break;
-		}
-		else
-		{
-			CtxGuard.GetConn()->SetStatus(CS_UNCONNECTED);
-		}
-	}
-	FormatReply(Type, reply, Result, Val);
-	if (nullptr != reply)
-	{
-		freeReplyObject((void*)reply);
-		reply = nullptr;
-	}
-}
-*/
 
 void RedisCmd::FormatReply(ReplyType Type, redisReply *Reply, BaseResult &Result, void *Val)
 {
@@ -422,7 +294,7 @@ void RedisNormalCmd::Command(ReplyType Type, BaseResult &Result, void *Val, cons
 	// to do maxretry
 	for (int i = 0; i<2; i++)
 	{
-		RedisCtxGuard CtxGuard(&_conn_pool); //必须放在for循环里面，否则连接不会被正确put会pool
+		RedisCtxGuard CtxGuard(&_conn_pool);  //蹇呴』鏀惧湪for寰幆閲岄潰锛屽惁鍒欒繛鎺ヤ笉浼氳姝ｇ‘put浼歱ool
 		Ctx = CtxGuard.GetCtx();
 		// GetCtx err
 		if (nullptr == Ctx)
@@ -439,7 +311,7 @@ void RedisNormalCmd::Command(ReplyType Type, BaseResult &Result, void *Val, cons
 		va_start(args, Cmd);
 		reply = static_cast<redisReply *>(redisvCommand(Ctx, Cmd, args));
 		va_end(args);
-		if (Ctx && Ctx->err == 1) //超时重试
+		if (Ctx && Ctx->err == 1) //瓒呮椂閲嶈瘯
 		{
 			printf("come here\n");
 			CtxGuard.GetConn()->SetStatus(CS_UNCONNECTED);
@@ -483,7 +355,7 @@ void RedisNormalCmd::DovCommand(ReplyType Type, vector<const char *> &Argv, cons
 			reply = nullptr;
 		}
 		reply = static_cast<redisReply *>(redisCommandArgv(Ctx, Argv.size(), &(Argv[0]), &(Argvlen[0])));
-		if (Ctx && Ctx->err == 1) //超时重试
+		if (Ctx && Ctx->err == 1)  //瓒呮椂閲嶈瘯
 		{
 			printf("come here\n");
 			CtxGuard.GetConn()->SetStatus(CS_UNCONNECTED);
@@ -518,12 +390,13 @@ RedisPipelineCmd::~RedisPipelineCmd()
 
 }
 
-void RedisPipelineCmd::Begin()
+
+void RedisPipelineCmd::GetCtx()
 {
 	printf("Get Conn\n");
-	index = 0;
-	if (_conn_pool != nullptr)
+	if (nullptr == _ctx && _conn_pool != nullptr)
 	{
+		index = 0;
 		_conn = _conn_pool->GetConn();
 		if (_conn)
 		{
@@ -534,11 +407,12 @@ void RedisPipelineCmd::Begin()
 			_ctx = nullptr;
 		}
 	}
-	_mutex.lock();
+	//_mutex.lock();
 }
 
 void RedisPipelineCmd::Command(ReplyType Type, BaseResult &Result, void *Val, const char* Cmd, ...)
 {
+	GetCtx();
 	int ret = -1;
 	_reply[index++] = std::make_tuple(Type,&Result, Val);
 	if (nullptr == _ctx)
@@ -563,6 +437,7 @@ void RedisPipelineCmd::Command(ReplyType Type, BaseResult &Result, void *Val, co
 
 void RedisPipelineCmd::DovCommand(ReplyType Type, vector<const char *> &Argv, const vector<size_t> &Argvlen, BaseResult &Result, void *Val)
 {
+	GetCtx();
 	int ret = -1;
 	_reply[index++] = std::make_tuple(Type, &Result, Val);
 	if (nullptr == _ctx)
@@ -586,13 +461,13 @@ int RedisPipelineCmd::Exec()
 	for (size_t i = 0; i != _success_reply.size(); i++)
 	{
 		void *pReplay = NULL;
-		int ret = redisGetReply(_ctx, &pReplay);
-		if (_ctx && _ctx->err == 1)
+		redisGetReply(_ctx, &pReplay);
+		if ((_ctx && _ctx->err == 1) || nullptr==pReplay)//瓒呮椂閲嶈瘯
 		{
 			_conn->SetStatus(CS_UNCONNECTED);
 			index = 0;
 			_conn_pool->PutConn(_conn);
-			_mutex.unlock();
+			//_mutex.unlock();
 			return -1;
 		}
 		FormatReply(std::get<0>(_reply[i]), (redisReply*)pReplay, *std::get<1>(_reply[i]), std::get<2>(_reply[i]));
@@ -606,9 +481,11 @@ int RedisPipelineCmd::Exec()
 	if (_conn_pool != nullptr)
 	{
 		_conn_pool->PutConn(_conn);
+		_conn.reset();
+		_ctx = nullptr;
 	}
 	_reply.clear();
 	_success_reply.clear();
-	_mutex.unlock();
+	//_mutex.unlock();
 	return 0;
 }

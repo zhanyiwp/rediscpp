@@ -1752,6 +1752,7 @@ RedisPipeClient::~RedisPipeClient()
 	}
 }
 
+/*
 void RedisPipeClient::Begin()
 {
 	if (_cmd == nullptr)
@@ -1760,7 +1761,7 @@ void RedisPipeClient::Begin()
 	}
 	static_cast<RedisPipelineCmd*>(_cmd)->Begin();
 }
-
+*/
 int RedisPipeClient::Exec()
 {
 	if (_cmd == nullptr)

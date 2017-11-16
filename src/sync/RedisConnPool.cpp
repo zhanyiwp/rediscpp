@@ -39,7 +39,7 @@ void RedisConnPool::PutConn(std::shared_ptr<RedisConn>Conn)
 std::shared_ptr<RedisConn> RedisConnPool::NewConntion()
 {
 	std::shared_ptr<RedisConn> Conn = std::make_shared<RedisConn>(_opt);
-	//_conn_pool.push_back(Conn);
+	_conn_count++;
 	Conn->Connect();
 	return Conn;
 }
@@ -50,6 +50,7 @@ void RedisConnPool::Release()
 	for (auto it : _conn_pool)
 	{
 		it->Close();
+		_conn_count--;
 	}
 	_conn_pool.clear();
 }
